@@ -1,5 +1,5 @@
 from django.db import models
-
+#devices
 class Device(models.Model):
     DEVICE_TYPES = [
         ('FAN', 'Fan'),
