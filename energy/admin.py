@@ -10,6 +10,7 @@ class DeviceAdmin(admin.ModelAdmin):
         'device_type',
         'quantity',
         'watt_rating',
-        'hours_used_per_day'
+        'hours_used_per_day',
+        'created_at'
     )
 

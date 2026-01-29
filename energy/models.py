@@ -20,3 +20,21 @@ class Device(models.Model):
 
     def __str__(self):
         return f"{self.device_type} - {self.room}"
+    
+class Appliance(models.Model):
+    name = models.CharField(max_length=50)
+    power_rating = models.FloatField(help_text="Watts")
+    category = models.CharField(max_length=20)
+
+class Usage(models.Model):
+    appliance = models.ForeignKey(Appliance, on_delete=models.CASCADE)
+    hours_used = models.FloatField()
+    date = models.DateField()
+    season = models.CharField(max_length=10)
+
+class Emission(models.Model):
+    usage = models.OneToOneField(Usage, on_delete=models.CASCADE)
+    energy_kwh = models.FloatField()
+    co2_kg = models.FloatField()
+
+
