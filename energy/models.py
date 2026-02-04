@@ -76,7 +76,7 @@ class EnergyUsage(models.Model):
             )
 
         # 3. Device power validation
-        if self.device.power_rating <= 0:
+        if self.device.watt_rating <= 0:
             raise ValidationError(
                 "Device power rating must be greater than zero."
             )
@@ -84,7 +84,7 @@ class EnergyUsage(models.Model):
     def save(self, *args, **kwargs):
         # Auto-calculate energy consumption
         self.energy_consumed = (
-            self.device.power_rating * self.hours_used
+            self.device.watt_rating * self.hours_used
         ) / 1000  # Wh → kWh
 
         super().save(*args, **kwargs)
