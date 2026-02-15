@@ -1,0 +1,42 @@
+[
+    {
+        "building": "Main Building",
+        "room": "101",
+        "device_type": "FAN",
+        "quantity": 2,
+        "watt_rating": 75,
+        "hours_used_per_day": 8
+    },
+    {
+        "building": "Main Building",
+        "room": "102",
+        "device_type": "AC",
+        "quantity": 1,
+        "watt_rating": 1500,
+        "hours_used_per_day": 10
+    },
+    {
+        "building": "Main Building",
+        "room": "103",
+        "device_type": "LIGHT",
+        "quantity": 4,
+        "watt_rating": 20,
+        "hours_used_per_day": 12
+    },
+    {
+        "building": "Annex Building",
+        "room": "201",
+        "device_type": "PC",
+        "quantity": 3,
+        "watt_rating": 350,
+        "hours_used_per_day": 9
+    },
+    {
+        "building": "Annex Building",
+        "room": "202",
+        "device_type": "FAN",
+        "quantity": 3,
+        "watt_rating": 80,
+        "hours_used_per_day": 6
+    }
+]
