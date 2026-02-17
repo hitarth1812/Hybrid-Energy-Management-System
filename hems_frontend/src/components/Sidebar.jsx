@@ -1,6 +1,10 @@
 import React, { useState } from 'react';
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, Server, UploadCloud, Zap, Settings, HelpCircle, Moon, Sun, ChevronRight, AlertCircle } from 'lucide-react';
+import { motion } from 'framer-motion';
+import {
+    LayoutDashboard, Server, UploadCloud, Zap, Settings, HelpCircle, Moon, Sun, ChevronRight, AlertCircle,
+    Globe, Clock, Target, FileText
+} from 'lucide-react';
 import { cn } from '../lib/utils';
 import ArkaLogo from '../assets/arka_logo.png';
 import CharusatLogo from '../assets/charusat_logo.jpg';
@@ -11,6 +15,12 @@ const Sidebar = ({ isDarkMode, toggleTheme, onContactClick }) => {
         { name: 'Devices', icon: Server, path: '/devices' },
         { name: 'Smart Upload', icon: UploadCloud, path: '/smart-upload' },
         { name: 'Energy Usage', icon: Zap, path: '/energy' },
+
+        // Carbon Intelligence Platform
+        { name: 'Carbon Dashboard', icon: Globe, path: '/carbon' },
+        { name: 'Log Usage', icon: Clock, path: '/carbon/log' },
+        { name: 'Carbon Targets', icon: Target, path: '/carbon/targets' },
+        { name: 'ESG Reports', icon: FileText, path: '/carbon/reports' },
     ];
 
     return (
@@ -24,23 +34,49 @@ const Sidebar = ({ isDarkMode, toggleTheme, onContactClick }) => {
             {/* Branding */}
             <div className="space-y-6 mt-4 px-2">
                 <div className="flex flex-col items-center gap-2 group">
-                    {/* ARKA Logo Container - Enlarged */}
-                    <div className="relative w-24 h-24 transition-transform duration-500 group-hover:scale-105 shrink-0">
-                        {/* Glow only in Dark Mode */}
-                        <div className="absolute inset-0 bg-green-500/20 blur-2xl rounded-full opacity-0 dark:group-hover:opacity-100 transition-opacity duration-500 hidden dark:block" />
+                    {/* ARKA Logo Container - Animated & Glassmorphic */}
+                    <motion.div
+                        className="relative w-24 h-24 shrink-0 flex items-center justify-center p-3 rounded-2xl bg-white/40 dark:bg-white/5 border border-white/20 dark:border-white/5 shadow-inner backdrop-blur-md overflow-hidden"
+                        initial={{ scale: 0.8, opacity: 0 }}
+                        animate={{ scale: 1, opacity: 1 }}
+                        transition={{ duration: 0.8, ease: "easeOut" }}
+                        whileHover={{ scale: 1.05, rotate: 2 }}
+                    >
+                        {/* Glow Effect */}
+                        <motion.div
+                            className="absolute inset-0 bg-green-500/10 blur-xl rounded-full"
+                            animate={{ opacity: [0.3, 0.6, 0.3] }}
+                            transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+                        />
 
-                        <img
+                        <motion.img
                             src={ArkaLogo}
                             alt="ARKA Logo"
-                            className="w-full h-full object-contain relative z-10 filter drop-shadow-sm dark:drop-shadow-[0_0_15px_rgba(34,197,94,0.3)] mix-blend-multiply dark:mix-blend-normal"
+                            className="w-full h-full object-contain relative z-10 drop-shadow-md"
                             onError={(e) => { e.currentTarget.style.display = 'none'; e.currentTarget.nextSibling.style.display = 'flex'; }}
+                            animate={{ y: [0, -3, 0] }}
+                            transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
                         />
                         <div className="hidden absolute inset-0 bg-gradient-to-br from-green-500 to-emerald-700 rounded-xl items-center justify-center text-white font-bold text-2xl shadow-lg">A</div>
-                    </div>
+                    </motion.div>
 
                     <div className="text-center">
-                        <h1 className="text-2xl font-bold tracking-tight text-slate-800 dark:text-white drop-shadow-sm logo-text">ARKA</h1>
-                        <p className="text-[10px] text-green-600 dark:text-green-400 font-bold uppercase tracking-wider glow-text whitespace-nowrap">Energy Nexus</p>
+                        <motion.h1
+                            className="text-2xl font-bold tracking-tight text-slate-800 dark:text-white drop-shadow-sm logo-text"
+                            initial={{ opacity: 0, y: 5 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.2 }}
+                        >
+                            ARKA
+                        </motion.h1>
+                        <motion.p
+                            className="text-[10px] text-green-600 dark:text-green-400 font-bold uppercase tracking-wider glow-text whitespace-nowrap"
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            transition={{ delay: 0.4 }}
+                        >
+                            Energy Nexus
+                        </motion.p>
                     </div>
                 </div>
 
@@ -55,13 +91,13 @@ const Sidebar = ({ isDarkMode, toggleTheme, onContactClick }) => {
 
 
             {/* Navigation */}
-            <nav className="flex-1 mt-10 space-y-2">
+            <nav className="flex-1 mt-10 space-y-2 overflow-y-auto scrollbar-hide">
                 {navItems.map((item) => (
                     <NavLink
                         key={item.path}
                         to={item.path}
                         className={({ isActive }) => cn(
-                            "flex items-center gap-3 px-4 py-3.5 rounded-xl transition-all duration-300 group relative overflow-hidden",
+                            "flex items-center gap-3 px-4 py-3.5 rounded-xl transition-all duration-300 group relative overflow-hidden shrink-0",
                             isActive
                                 // Active State: Light (Green/White gradient), Dark (Green Glow)
                                 ? "bg-gradient-to-r from-green-100/80 to-emerald-100/50 dark:from-green-500/20 dark:to-emerald-500/10 text-green-700 dark:text-green-400 shadow-sm border border-green-200 dark:border-green-500/20"

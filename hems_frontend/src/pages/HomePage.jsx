@@ -1,12 +1,14 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import GlowingGlobe from '../components/GlowingGlobe';
 import FloatingCard from '../components/FloatingCard';
+import CarbonTransition from '../components/CarbonTransition';
 import { ArrowRight, BarChart3, Zap, UploadCloud, Globe, Shield } from 'lucide-react';
 
 const HomePage = () => {
     const navigate = useNavigate();
+    const [showCarbonTransition, setShowCarbonTransition] = useState(false);
 
     return (
         <div className="relative text-gray-900 dark:text-white font-sans selection:bg-green-500/30 w-full h-full flex flex-col justify-center">
@@ -104,8 +106,34 @@ const HomePage = () => {
                                 </div>
                             </FloatingCard>
                         </div>
+                        {/* Card 4: Top Left - Carbon Intelligence (NEW) */}
+                        <div onClick={() => setShowCarbonTransition(true)} className="absolute top-10 left-0 w-52 pointer-events-auto cursor-pointer">
+                            <FloatingCard delay={1.0} depth={0.8}>
+                                <div className="p-4 space-y-3 bg-white/80 dark:bg-black/40 backdrop-blur-md rounded-xl border border-gray-200 dark:border-white/10 shadow-lg">
+                                    <div className="w-8 h-8 rounded-full bg-emerald-500/20 flex items-center justify-center">
+                                        <Globe className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                                    </div>
+                                    <div className="space-y-1">
+                                        <h3 className="text-sm font-semibold text-gray-900 dark:text-white">Carbon Intelligence</h3>
+                                        <div className="flex items-center gap-2">
+                                            <span className="flex h-2 w-2 relative">
+                                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                                                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                                            </span>
+                                            <p className="text-xs text-gray-500 dark:text-white/50">Tracking Emissions</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </FloatingCard>
+                        </div>
                     </div>
                 </div>
+
+                {/* Transition Overlay */}
+                <CarbonTransition
+                    isOpen={showCarbonTransition}
+                    onClose={() => setShowCarbonTransition(false)}
+                />
             </div>
         </div>
     );
