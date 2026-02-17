@@ -31,7 +31,7 @@ const HomePage = () => {
                     </div>
 
                     <h1 className="text-5xl lg:text-7xl font-bold leading-tight tracking-tight text-gray-900 dark:text-white">
-                        Turn Every <span className="text-transparent bg-clip-text bg-gradient-to-r from-green-600 to-emerald-600 dark:from-green-400 dark:to-emerald-600 drop-shadow-sm">User Insight</span> Into Your Next Big Feature.
+                        With great <span className="text-transparent bg-clip-text bg-gradient-to-r from-green-600 to-emerald-600 dark:from-green-400 dark:to-emerald-600 drop-shadow-sm">Power Consumption</span> Comes Great Responsibility To Report It.
                     </h1>
 
                     <p className="text-lg text-gray-600 dark:text-white/60 max-w-xl leading-relaxed">

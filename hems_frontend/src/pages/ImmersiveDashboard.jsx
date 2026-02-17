@@ -76,7 +76,7 @@ const ImmersiveDashboard = ({ onBack }) => {
                         </div>
 
                         <h1 className="text-5xl lg:text-7xl font-bold leading-tight tracking-tight">
-                            Turn Every <span className="text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-emerald-600">User Insight</span> Into Your Next Big Feature.
+                            With great <span className="text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-emerald-600">Power Consumption</span> Comes Great Responsibility To Report It.
                         </h1>
 
                         <p className="text-lg text-white/60 max-w-xl leading-relaxed">
