@@ -56,3 +56,8 @@ coverage/
 *.temp
 .cache/
 .venv/
+ 
+# Data files
+*.csv
+*.xlsx
+*.xls
