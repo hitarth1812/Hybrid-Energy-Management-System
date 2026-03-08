@@ -74,7 +74,10 @@ const CarbonCalculator = () => {
         setResult(null);
 
         const params = { scope, hours };
-        if (scope === 'room') params.room_id = selectedRoom;
+        if (scope === 'room') {
+            params.room_id = selectedRoom;
+            params.building_id = selectedBuilding; // helps backend find all devices for the room
+        }
         if (scope === 'building') params.building_id = selectedBuilding;
 
         try {
@@ -279,7 +282,7 @@ const CarbonCalculator = () => {
                             </div>
                         )}
 
-                        {/* Device Breakdown Table */
+                        {/* Device Breakdown Table */}
                         {result.devices.length > 0 && (
                             <div className="bg-white/60 dark:bg-slate-800/50 rounded-2xl border border-slate-200 dark:border-slate-700/50 backdrop-blur-xl overflow-hidden">
                                 <div className="p-6 border-b border-slate-200 dark:border-slate-700/50">

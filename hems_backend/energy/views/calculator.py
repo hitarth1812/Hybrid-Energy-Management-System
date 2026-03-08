@@ -1,7 +1,7 @@
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
-from django.db.models import Sum, F, FloatField, ExpressionWrapper
+from django.db.models import Sum, F, FloatField, ExpressionWrapper, Q
 from ..models import Device, Building, Room
 
 EMISSION_FACTOR = 0.82  # kg CO2 per kWh
@@ -30,7 +30,22 @@ def calculate_carbon(request):
     devices_qs = Device.objects.select_related('room', 'building', 'brand')
 
     if scope == 'room' and room_id:
-        devices_qs = devices_qs.filter(room_id=room_id)
+        # Primary: exact room match
+        # Broader: also include any device whose building matches and room name
+        # matches — this handles data uploaded across slightly different building
+        # name variants that ended up in separate Room objects with the same name.
+        target_room = Room.objects.filter(id=room_id).select_related('building').first()
+        if target_room:
+            if building_id:
+                # Devices in the exact selected room OR any same-named room in that building
+                devices_qs = devices_qs.filter(
+                    Q(room_id=room_id) |
+                    Q(building_id=building_id, room__name=target_room.name)
+                )
+            else:
+                devices_qs = devices_qs.filter(room_id=room_id)
+        else:
+            devices_qs = devices_qs.filter(room_id=room_id)
     elif scope == 'floor' and building_id and floor is not None:
         devices_qs = devices_qs.filter(building_id=building_id, room__floor=int(floor))
     elif scope == 'building' and building_id:

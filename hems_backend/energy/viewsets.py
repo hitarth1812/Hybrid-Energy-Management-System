@@ -31,12 +31,13 @@ class BuildingViewSet(viewsets.ModelViewSet):
     permission_classes = []
 
 class RoomViewSet(viewsets.ModelViewSet):
-    queryset = Room.objects.all()
+    queryset = Room.objects.select_related('building').all()
     serializer_class = RoomSerializer
     authentication_classes = []
     permission_classes = []
     filter_backends = [DjangoFilterBackend]
     filterset_fields = ['building']
+    pagination_class = None  # Return all rooms — no pagination
 
 class DeviceViewSet(viewsets.ModelViewSet):
     queryset = Device.objects.select_related(
