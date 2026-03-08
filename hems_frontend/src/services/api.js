@@ -21,36 +21,12 @@ const createCrudService = (resource) => ({
 export const deviceService = {
   ...createCrudService('devices'),
   getMetadata: () => api.get('/api/devices/metadata/'),
-  upload: (file) => {
-    const formData = new FormData();
-    formData.append('file', file);
-    return api.post('/api/devices/upload/', formData, {
-      headers: { 'Content-Type': 'multipart/form-data' }
-    });
-  }
 }
 
 export const brandService = createCrudService('brands')
 export const buildingService = createCrudService('buildings')
 export const roomService = createCrudService('rooms')
 export const categoryService = createCrudService('categories')
-
-// Bulk Upload API (Legacy wrapper)
-export const bulkUploadDevices = async (file) => {
-  try {
-    const response = await deviceService.upload(file);
-    return response.data;
-  } catch (error) {
-    if (error.response) {
-      const errorData = error.response.data;
-      const customError = new Error(errorData.error || 'Upload failed');
-      customError.details = errorData;
-      throw customError;
-    }
-    throw error;
-  }
-};
-
 
 // Energy Usage API
 export const energyService = {

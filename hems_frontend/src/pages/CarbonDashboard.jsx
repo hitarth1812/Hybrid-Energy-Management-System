@@ -6,10 +6,11 @@ import {
 } from 'recharts';
 import {
     LayoutDashboard, TrendingUp, Zap, TreeDeciduous, AlertTriangle,
-    Filter, Calendar, Building
+    Filter, Calendar, Building, Calculator
 } from 'lucide-react';
 import api from '../services/api';
 import { cn } from '../lib/utils';
+import CarbonCalculator from './CarbonCalculator';
 
 // Colors for charts
 const COLORS = ['#22c55e', '#3b82f6', '#f97316', '#ef4444', '#a855f7', '#eab308'];
@@ -20,6 +21,7 @@ const CarbonDashboard = () => {
     const [dashboardData, setDashboardData] = useState(null);
     const [buildingData, setBuildingData] = useState([]);
     const [buildingsList, setBuildingsList] = useState([]); // For dropdown
+    const [activeTab, setActiveTab] = useState('dashboard'); // 'dashboard' | 'calculator'
 
     // Filters
     const [selectedBuilding, setSelectedBuilding] = useState('');
@@ -81,6 +83,27 @@ const CarbonDashboard = () => {
                         Carbon Intelligence
                     </h1>
                     <p className="text-slate-600 dark:text-slate-400 mt-1">Real-time energy & emission tracking</p>
+                    {/* Tab Switcher */}
+                    <div className="flex gap-2 mt-4">
+                        <button
+                            onClick={() => setActiveTab('dashboard')}
+                            className={`flex items-center gap-2 px-4 py-1.5 rounded-lg text-sm font-semibold transition-all border ${activeTab === 'dashboard'
+                                    ? 'bg-green-500 text-white border-green-500 shadow-md shadow-green-500/20'
+                                    : 'bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-700 hover:border-green-400'
+                                }`}
+                        >
+                            <LayoutDashboard className="w-4 h-4" /> Dashboard
+                        </button>
+                        <button
+                            onClick={() => setActiveTab('calculator')}
+                            className={`flex items-center gap-2 px-4 py-1.5 rounded-lg text-sm font-semibold transition-all border ${activeTab === 'calculator'
+                                    ? 'bg-emerald-500 text-white border-emerald-500 shadow-md shadow-emerald-500/20'
+                                    : 'bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-700 hover:border-emerald-400'
+                                }`}
+                        >
+                            <Calculator className="w-4 h-4" /> Calculator
+                        </button>
+                    </div>
                 </div>
 
                 <div className="flex flex-wrap gap-3">
@@ -343,6 +366,18 @@ const CarbonDashboard = () => {
                         </div>
                     </>
                 )
+            )}
+
+            {/* Calculator Tab */}
+            {activeTab === 'calculator' && (
+                <motion.div
+                    key="calculator"
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0 }}
+                >
+                    <CarbonCalculator />
+                </motion.div>
             )}
         </div>
     );

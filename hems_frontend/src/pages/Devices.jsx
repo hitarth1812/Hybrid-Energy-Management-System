@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Badge } from '@/components/ui/badge'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import BulkDeviceUpload from '@/components/BulkDeviceUpload'
+// import BulkDeviceUpload from '@/components/BulkDeviceUpload'
 import { deviceService, brandService, buildingService, roomService, categoryService } from '../services/api'
 
 const deviceIcons = {
@@ -243,7 +243,7 @@ export default function Devices() {
                 </CardContent>
             </Card>
 
-            <BulkDeviceUpload onUploadComplete={() => fetchDevices(true)} />
+            {/* BulkDeviceUpload component removed */}
 
             {loading ? <div className='text-center py-10 text-gray-500 dark:text-gray-400'>Loading...</div> : (
                 viewMode === 'table' ? (

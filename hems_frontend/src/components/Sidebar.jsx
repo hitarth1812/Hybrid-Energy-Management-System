@@ -36,7 +36,7 @@ const Sidebar = ({ isDarkMode, toggleTheme, onContactClick }) => {
                 <div className="flex flex-col items-center gap-2 group">
                     {/* ARKA Logo Container - Animated & Glassmorphic */}
                     <motion.div
-                        className="relative w-24 h-24 shrink-0 flex items-center justify-center p-3 rounded-2xl bg-white/40 dark:bg-white/5 border border-white/20 dark:border-white/5 shadow-inner backdrop-blur-md overflow-hidden"
+                        className="relative w-32 h-32 shrink-0 flex items-center justify-center p-4 rounded-3xl bg-white/40 dark:bg-white/5 border border-white/20 dark:border-white/5 shadow-inner backdrop-blur-md overflow-hidden"
                         initial={{ scale: 0.8, opacity: 0 }}
                         animate={{ scale: 1, opacity: 1 }}
                         transition={{ duration: 0.8, ease: "easeOut" }}
@@ -62,7 +62,7 @@ const Sidebar = ({ isDarkMode, toggleTheme, onContactClick }) => {
 
                     <div className="text-center">
                         <motion.h1
-                            className="text-2xl font-bold tracking-tight text-slate-800 dark:text-white drop-shadow-sm logo-text"
+                            className="text-3xl font-extrabold tracking-tight text-slate-800 dark:text-white drop-shadow-md logo-text"
                             initial={{ opacity: 0, y: 5 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ delay: 0.2 }}
@@ -70,7 +70,7 @@ const Sidebar = ({ isDarkMode, toggleTheme, onContactClick }) => {
                             ARKA
                         </motion.h1>
                         <motion.p
-                            className="text-[10px] text-green-600 dark:text-green-400 font-bold uppercase tracking-wider glow-text whitespace-nowrap"
+                            className="text-[12px] text-green-600 dark:text-green-400 font-bold uppercase tracking-wider glow-text whitespace-nowrap"
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                             transition={{ delay: 0.4 }}
@@ -145,8 +145,8 @@ const Sidebar = ({ isDarkMode, toggleTheme, onContactClick }) => {
                         </div>
 
                         <div className="flex flex-col">
-                            <span className="text-[9px] uppercase tracking-wider font-bold text-slate-500 dark:text-white/40">Powered By</span>
-                            <span className="text-xs font-bold text-slate-800 dark:text-white/90">CHARUSAT</span>
+                            <span className="text-[10px] uppercase tracking-wider font-bold text-slate-500 dark:text-white/40">Powered By</span>
+                            <span className="text-sm font-bold text-slate-800 dark:text-white/90">CHARUSAT</span>
                         </div>
                     </div>
 
