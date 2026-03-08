@@ -156,7 +156,7 @@ const CarbonDashboard = () => {
                 </div>
             )}
 
-            {loading && !dashboardData ? (
+            {activeTab === 'dashboard' && (loading && !dashboardData ? (
                 // Skeleton Loading
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-6 animate-pulse">
                     {[1, 2, 3, 4].map(i => <div key={i} className="h-40 bg-slate-800/50 rounded-2xl" />)}
@@ -366,7 +366,7 @@ const CarbonDashboard = () => {
                         </div>
                     </>
                 )
-            )}
+            ))}
 
             {/* Calculator Tab */}
             {activeTab === 'calculator' && (

@@ -16,7 +16,8 @@ export default function App() {
     <ErrorBoundary>
       <Routes>
         <Route path="/" element={<MainLayout />}>
-          <Route index element={<HomePage />} />
+          <Route index element={<Dashboard />} />
+          <Route path="home" element={<HomePage />} />
           <Route path="dashboard" element={<Dashboard />} />
           <Route path="devices" element={<Devices />} />
           <Route path="smart-upload" element={<SmartUpload />} />

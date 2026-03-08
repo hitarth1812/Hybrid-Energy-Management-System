@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import GlowingGlobe from '../components/GlowingGlobe';
 import FloatingCard from '../components/FloatingCard';
 import CarbonTransition from '../components/CarbonTransition';
-import { ArrowRight, BarChart3, Zap, UploadCloud, Globe, Shield } from 'lucide-react';
+import { BarChart3, Zap, UploadCloud, Globe } from 'lucide-react';
 
 const HomePage = () => {
     const navigate = useNavigate();
@@ -38,14 +38,7 @@ const HomePage = () => {
                         Real-time energy management and analytics powered by advanced AI. Visualize your data like never before with ARKA's immersive platform.
                     </p>
 
-                    <div className="flex flex-wrap items-center gap-4">
-                        <button onClick={() => navigate('/dashboard')} className="group relative px-8 py-4 bg-green-600 hover:bg-green-500 text-white rounded-xl font-semibold transition-all shadow-[0_0_20px_rgba(34,197,94,0.3)] hover:shadow-[0_0_40px_rgba(34,197,94,0.5)] overflow-hidden">
-                            <span className="relative z-10 flex items-center gap-2">
-                                Launch Dashboard <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                            </span>
-                            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent skew-x-12 -translate-x-full group-hover:animate-shimmer" />
-                        </button>
-                    </div>
+
                 </motion.div>
 
                 {/* 3D Visuals Area */}
