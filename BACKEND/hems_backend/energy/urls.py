@@ -26,6 +26,8 @@ urlpatterns = [
     path('carbon/target/', views.set_carbon_target),
     path('carbon/monthly-trend/', views.monthly_trend),
     path('carbon/esg-report/', views.esg_report),
+    path('carbon/esg-report/stream/<int:report_id>/', views.esg_report_stream),
+    path('carbon/esg-report/download/<str:token>/', views.esg_report_download),
     path('carbon/calculate/', views.calculate_carbon),
     # [C1] POST predict/ is internal-only (auth required); GET predict/time/ is the public endpoint
     path('predict/', views.predict_power, name='predict-power'),

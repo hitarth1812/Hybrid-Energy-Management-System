@@ -74,9 +74,10 @@ Located in `hems_backend/energy/`.
 ### 🤖 Machine Learning Models (`ml_models/`)
 | File | Purpose |
 |:---|:---|
-| `predictor.py` | **Service Layer.** Loads pre-trained XGBoost and LightGBM models on Django startup. Exposes `predict(feature_dict) → dict` function returning blended predictions. Maintains `FEATURES` list for validation. |
-| `xgb_power.json` | **XGBoost Model.** Trained regressor in JSON format. Converted from sklearn via `xgboost` library. |
-| `lgb_power.txt` | **LightGBM Model.** Booster saved in text format. Loads rapidly for production inference. |
+| `predictor.py` | **Service Layer.** Loads pre-trained XGBoost, LightGBM, and Random Forest models on Django startup. Exposes `predict(feature_dict) → dict` function returning weighted ensemble predictions (30% XGB + 40% LGB + 30% RF). Maintains `FEATURES` list for the 14-feature input. |
+| `xgb_power.json` | **XGBoost Model.** Trained regressor in JSON format. 500 estimators, max_depth=6, learning_rate=0.05. |
+| `lgb_power.txt` | **LightGBM Model.** Booster saved in text format. Best single-model performance (R²=0.916). |
+| `rf_power.joblib` | **Random Forest Model.** Scikit-learn regressor saved via joblib. 300 estimators, max_depth=20. |
 
 ---
 
@@ -95,7 +96,7 @@ Located in `hems_frontend/src/`.
 | `ESGReportPage.jsx` | **Compliance.** Allows users to request a new PDF report. Logic handles polling and sequential download of generated PDF files. |
 | `SmartUpload.jsx` | **Bulk Ingestion Hub.** Wraps the `IntelligentUpload` component to provide a seamless file import experience. |
 | `HomePage.jsx` | **Hero Section.** Implements the immersive "Glowing Globe" and the launch buttons for the dashboard. |
-| `TimeForecast.jsx` | **[NEW] ML-Powered Forecasting.** Predicts power consumption for a specific date and time using a blended ensemble of XGBoost (40%) and LightGBM (60%) models. Returns predicted kW, CO2 emissions, day classification, and confidence scoring. |
+| `TimeForecast.jsx` | **[NEW] ML-Powered Forecasting.** Predicts power consumption for a specific date and time using a blended ensemble of XGBoost (30%), LightGBM (40%), and Random Forest (30%) models. Uses 14 features: sensor readings (current, VLL, VLN, frequency, power_factor), temporal (hour, day_of_week, is_weekend, month), and lag/rolling stats (power_lag_1/5/10, rolling_mean_5, rolling_std_5). |
 
 ### 🧩 Components (`/components`)
 | Component | Working & Logic |
@@ -111,47 +112,53 @@ Located in `hems_frontend/src/`.
 ### 📡 API Services (`/api`)
 | Service | Purpose |
 |:---|:---|
-| `predictPower.js` | **[NEW] ML Forecast Client.** Exports `predictPower(featureDict) → Promise<object>` function that POSTs to `/api/predict/` with all 30 feature columns. Returns predictions and individual model scores. |
+| `predictPower.js` | **[NEW] ML Forecast Client.** Exports `predictPower(isoString) → Promise<object>` function that GETs `/api/predict/time/?datetime=`. All 14 features are computed server-side. Returns predictions and individual model scores. |
 
 ---
 
 ## 🤖 4. Machine Learning Pipeline & Forecasting
 
 ### Overview
-The HEMS now incorporates advanced energy forecasting using **ensemble machine learning**. Two models (XGBoost and LightGBM) are trained on historical energy patterns and blended to predict future power consumption.
+The HEMS uses the **V-2-ROBUST** ensemble pipeline for energy forecasting. Three models (XGBoost, LightGBM, Random Forest) are trained on ~13,700 IoT sensor readings from ThingSpeak (feeds_5.csv, 27 Feb – 30 Mar 2026) and blended to predict next-step power consumption.
 
 ### ML Architecture
-- **Model Persistence**: Models are stored as serialized files in `hems_backend/ml_models/`:
-  - `xgb_power.json`: XGBoost regressor trained on 30 days of power data
-  - `lgb_power.txt`: LightGBoost booster with the same feature set
-  - `predictor.py`: Service layer that loads both models and performs ensemble inference
-  
-- **Blend Weighting**: 40% XGBoost + 60% LightGBM (optimized for minimal MAE)
+- **Model Persistence**: Models are stored in `hems_backend/ml_models/`:
+  - `xgb_power.json`: XGBoost regressor (R²=0.898)
+  - `lgb_power.txt`: LightGBM booster (R²=0.916, best single model)
+  - `rf_power.joblib`: Random Forest regressor (R²=0.902)
+  - `predictor.py`: Ensemble service (30% XGB + 40% LGB + 30% RF)
 
-### Feature Engineering
-Power predictions utilize 30 temporal and power-dynamic features:
+### Data Pipeline
+1. **Raw IoT data** (18,283 rows, ~60s interval)
+2. **EDA & Cleaning**: Drop unusable columns, remove nulls, filter zero-power, fix power_factor outliers → ~13,767 clean rows
+3. **Feature Engineering**: Time features + lag features + rolling stats → 14 features
+4. **Chronological 80/20 split** (no shuffle) with TimeSeriesSplit CV (5 folds)
 
-| Feature Category | Examples |
+### Feature Set (14 features)
+
+| Category | Features |
 |:---|:---|
-| **Temporal** | `hour`, `dow` (day of week), `month`, `week`, `is_biz_hour` |
-| **Cyclical** | `hour_sin`, `hour_cos` (Fourier encoding for periodicity) |
-| **Power Dynamics** | `kVA`, `power_factor`, `kVAR`, `volt_ratio`, `specific_pwr` |
-| **Lagged Features** | `kw_lag_1`, `kw_lag_5`, `kw_lag_10`, `kw_lag_30`, `kw_lag_60` |
-| **Rolling Stats** | `kw_roll_mean_5`, `kw_roll_std_10`, `kw_roll_max_10` |
-| **Transient Events** | `volt_sag`, `volt_swell`, `pf_poor`, `kw_delta`, `kw_delta2` |
+| **Sensor** | `current`, `VLL`, `VLN`, `frequency`, `power_factor` |
+| **Temporal** | `hour`, `day_of_week`, `is_weekend`, `month` |
+| **Lag** | `power_lag_1`, `power_lag_5`, `power_lag_10` |
+| **Rolling** | `rolling_mean_5`, `rolling_std_5` |
+
+- **Target**: `power` (next row) — time-shifted for next-step forecasting
+- **No kVA leakage**: kVA is excluded to prevent target leakage
 
 ### Forecast Workflow
 1. **Input**: Datetime string (ISO 8601 format)
-2. **Feature Generation**: `views/predict.py` constructs feature vector based on temporal attributes and hourly averages
-3. **Ensemble Prediction**: Models predict independently, results blended
-4. **Output**: Returns `predicted_power_kw`, `predicted_co2_kg`, individual model predictions, and confidence scores
+2. **Feature Generation**: `views/predict.py` constructs 14-feature vector from temporal attributes and hourly sensor averages
+3. **Ensemble Prediction**: XGBoost, LightGBM, Random Forest predict independently, results blended with weights (30/40/30)
+4. **Confidence**: Based on model agreement (spread < 1kW = HIGH, < 3kW = MEDIUM, else LOW)
+5. **Output**: `predicted_power_kw`, `predicted_co2_kg`, individual model predictions, confidence, day type, load level
 
 ### API Endpoints
 
 | Endpoint | Method | Purpose |
 |:---|:---|:---|
-| `/api/predict/` | POST | Batch prediction with all 30 features in request body |
-| `/api/predict/time/` | GET | Temporal forecasting: `?datetime=2026-03-22T15:00:00` |
+| `/api/predict/` | POST | Internal-only: accepts all 14 features in request body (auth required) |
+| `/api/predict/time/` | GET | Public forecasting: `?datetime=2026-03-22T15:00:00` (features computed server-side) |
 
 ---
 

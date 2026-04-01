@@ -104,7 +104,7 @@ export default function EnergyUsage() {
       fetchUsages()
     } catch (err) {
       console.error('Error adding usage:', err)
-      setError(err.response?.data?.detail || err.message || 'Failed to add usage')
+      setError(err.response?.data?.error || err.response?.data?.detail || err.message || 'Failed to add usage')
     }
   }
 
@@ -120,35 +120,15 @@ export default function EnergyUsage() {
     const kvar = Math.sqrt(Math.max(kva ** 2 - sensorInput.power ** 2, 0))
 
     return {
-      power_factor: sensorInput.power_factor,
-      VLN: sensorInput.VLN,
-      kVA: kva,
-      kVAR: kvar,
-      volt_ratio: sensorInput.VLL / (sensorInput.VLN * Math.sqrt(3)) || 1,
-      specific_pwr: sensorInput.current > 0 ? sensorInput.power / sensorInput.current : 0,
       hour,
-      dow,
+      day_of_week: dow,
+      is_weekend: dow >= 5 ? 1 : 0,
       month: now.getMonth() + 1,
-      week: Math.ceil(now.getDate() / 7),
-      is_biz_hour: hour >= 9 && hour <= 18 ? 1 : 0,
-      hour_sin: Math.sin((2 * Math.PI * hour) / 24),
-      hour_cos: Math.cos((2 * Math.PI * hour) / 24),
-      kw_lag_1: sensorInput.power,
-      kw_lag_5: sensorInput.power,
-      kw_lag_10: sensorInput.power,
-      kw_lag_30: sensorInput.power,
-      kw_lag_60: sensorInput.power,
-      kw_roll_mean_5: sensorInput.power,
-      kw_roll_mean_30: sensorInput.power,
-      kw_roll_std_10: 0,
-      kw_roll_max_10: sensorInput.power,
-      kw_delta: 0,
-      kw_delta2: 0,
-      volt_sag: sensorInput.VLN < 230 ? 1 : 0,
-      volt_swell: sensorInput.VLN > 253 ? 1 : 0,
-      pf_poor: sensorInput.power_factor < 0.85 ? 1 : 0,
-      vll_stability: 0,
-      load_cat_enc: sensorInput.power < 20 ? 0 : sensorInput.power < 35 ? 1 : 2,
+      power_lag_1: sensorInput.power,
+      power_lag_5: sensorInput.power,
+      power_lag_10: sensorInput.power,
+      rolling_mean_5: sensorInput.power,
+      rolling_std_5: 2.0, // Default estimate
     }
   }
 
@@ -171,10 +151,10 @@ export default function EnergyUsage() {
 
     try {
       setPredicting(true)
-      const result = await predictPower(payload)
-      setPrediction(result)
+      const res = await api.post('/api/predict/', payload)
+      setPrediction(res.data)
     } catch (err) {
-      setPredictError(err.message || 'Prediction failed')
+      setPredictError(err.response?.data?.error || err.message || 'Prediction failed')
     } finally {
       setPredicting(false)
     }

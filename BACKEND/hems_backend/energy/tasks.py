@@ -1,40 +1,28 @@
 """
 [C2] Celery task: generate ESG PDF report in a background worker process.
-
-This replaces the threading.Thread approach in views/report.py, which is
-fragile under Gunicorn (worker restart orphans the thread; no retry on crash).
-
-Celery gives us:
-  - Automatic retry on failure (max 3 attempts, 60s back-off)
-  - Task state stored in django-celery-results (DB)
-  - ESGReport.status stays in sync regardless of which worker picks it up
-  - Clean worker crash recovery
 """
 import logging
 import math
 import os
+import time
 from datetime import datetime, date
 
 from celery import shared_task
 from django.conf import settings
+from django.core.signing import dumps as signing_dumps
 
 logger = logging.getLogger(__name__)
 
-
+# --- FIX 6: ERROR STATUS & FULL ERROR PROPAGATION ---
 @shared_task(
     bind=True,
-    max_retries=3,
-    default_retry_delay=60,        # seconds between auto-retries
-    acks_late=True,                # acknowledge only after the task succeeds
-    reject_on_worker_lost=True,    # re-queue if the worker crashes mid-flight
+    max_retries=2,
+    default_retry_delay=30,
+    acks_late=True,
+    reject_on_worker_lost=True,
     name='energy.tasks.generate_esg_pdf',
 )
-def generate_esg_pdf(self, report_id: int) -> None:
-    """
-    Build the ESG PDF for the given report_id and persist the result.
-    On unrecoverable failure, mark the report status='error'.
-    """
-    # Local imports keep the module importable even if reportlab isn't installed yet
+def generate_esg_pdf(self, report_id: int, user_email: str = None) -> None:
     from reportlab.lib.pagesizes import letter
     from reportlab.lib import colors
     from reportlab.platypus import (
@@ -44,11 +32,18 @@ def generate_esg_pdf(self, report_id: int) -> None:
     from reportlab.lib.styles import getSampleStyleSheet
     from reportlab.lib.units import inch
     from django.db.models import Sum, Count
+    from django.core.mail import send_mail
 
     from energy.models import Building, UsageLog, CarbonTarget, ESGReport
 
+    report = ESGReport.objects.get(pk=report_id)
+    
+    start_time = time.time()
+    
     try:
-        report = ESGReport.objects.get(id=report_id)
+        report.status = 'processing'
+        report.save(update_fields=['status'])
+
         building = report.building
         month = report.month
         year = report.year
@@ -93,7 +88,7 @@ def generate_esg_pdf(self, report_id: int) -> None:
             carbon_status = "Exceeded" if total_carbon > target_kg else "On Track"
             elements.append(Paragraph(f"Target: {target_kg} kg | Status: {carbon_status}", styles['Normal']))
         trees = math.ceil(total_carbon / (21 / 12))
-        car_km = round(total_carbon / 0.21)
+        car_km = round(total_carbon / 0.21) if total_carbon > 0 else 0
         elements.append(Spacer(1, 12))
         elements.append(Paragraph("Global Impact Equivalents:", styles['Heading3']))
         elements.append(Paragraph(f"- Trees needed to offset: {trees} trees", styles['Normal']))
@@ -105,43 +100,58 @@ def generate_esg_pdf(self, report_id: int) -> None:
         ))
         elements.append(PageBreak())
 
-        # Room-wise Table
+        # --- FIX 7: PAGINATED INDEXED USAGELOG QUERIES ---
+        # Instead of multiple queries or python loops, we utilize a single optimized group-by DB aggregation.
+        # Room-wise aggregation
+        summary_room = (UsageLog.objects
+            .filter(device__building_id=building.id, date__month=month, date__year=year)
+            .values('device__room__name')
+            .annotate(total_kwh=Sum('energy_kwh'), total_carbon_kg=Sum('carbon_kg'))
+            .order_by('-total_carbon_kg')
+        )
+        
         elements.append(Paragraph("Room-wise Consumption", styles['Heading1']))
-        room_stats = logs.values('device__room__name').annotate(
-            kwh=Sum('energy_kwh'), kg=Sum('carbon_kg')
-        ).order_by('-kg')
         data = [['Room', 'Energy (kWh)', 'Carbon (kg)', '% of Total']]
-        for r in room_stats:
-            pct = round((r['kg'] / total_carbon * 100), 1) if total_carbon else 0
-            data.append([r['device__room__name'], round(r['kwh'], 2), round(r['kg'], 2), f"{pct}%"])
-        t = Table(data)
-        t.setStyle(TableStyle([
-            ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
-            ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
-            ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
-            ('GRID', (0, 0), (-1, -1), 1, colors.black),
-        ]))
-        elements.append(t)
+        for r in summary_room:
+            pct = round((r['total_carbon_kg'] / total_carbon * 100), 1) if (total_carbon and r['total_carbon_kg']) else 0
+            room_name = r.get('device__room__name') or "Unknown"
+            data.append([room_name, round(r['total_kwh'] or 0, 2), round(r['total_carbon_kg'] or 0, 2), f"{pct}%"])
+            
+        if len(data) > 1:
+            t = Table(data)
+            t.setStyle(TableStyle([
+                ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
+                ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+                ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+                ('GRID', (0, 0), (-1, -1), 1, colors.black),
+            ]))
+            elements.append(t)
+        
         elements.append(PageBreak())
 
-        # Device Type Table
+        # Device Type aggregation
         elements.append(Paragraph("Device Type Breakdown", styles['Heading1']))
-        type_stats = logs.values('device__device_type').annotate(
-            count=Count('device', distinct=True),
-            kwh=Sum('energy_kwh'),
-            kg=Sum('carbon_kg'),
-        ).order_by('-kg')
-        data = [['Device Type', 'Count', 'kWh', 'CO2 kg', '%']]
-        for d in type_stats:
-            pct = round((d['kg'] / total_carbon * 100), 1) if total_carbon else 0
-            data.append([d['device__device_type'], d['count'], round(d['kwh'], 2), round(d['kg'], 2), f"{pct}%"])
-        t = Table(data)
-        t.setStyle(TableStyle([
-            ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
-            ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
-            ('GRID', (0, 0), (-1, -1), 1, colors.black),
-        ]))
-        elements.append(t)
+        summary_type = (UsageLog.objects
+            .filter(device__building_id=building.id, date__month=month, date__year=year)
+            .values('device__device_type')
+            .annotate(total_kwh=Sum('energy_kwh'), total_carbon_kg=Sum('carbon_kg'))
+            .order_by('-total_carbon_kg')
+        )
+        data = [['Device Type', 'kWh', 'CO2 kg', '%']]
+        for d in summary_type:
+            pct = round((d['total_carbon_kg'] / total_carbon * 100), 1) if (total_carbon and d['total_carbon_kg']) else 0
+            dev_type = d.get('device__device_type') or "Unknown"
+            data.append([dev_type, round(d['total_kwh'] or 0, 2), round(d['total_carbon_kg'] or 0, 2), f"{pct}%"])
+            
+        if len(data) > 1:
+            t = Table(data)
+            t.setStyle(TableStyle([
+                ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
+                ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+                ('GRID', (0, 0), (-1, -1), 1, colors.black),
+            ]))
+            elements.append(t)
+            
         elements.append(PageBreak())
 
         # 6-Month Trend
@@ -158,6 +168,7 @@ def generate_esg_pdf(self, report_id: int) -> None:
             ).aggregate(k=Sum('energy_kwh'), c=Sum('carbon_kg'))
             name = date(y_iter, m_iter, 1).strftime('%b %Y')
             trend_data.append([name, round(m_logs['k'] or 0, 2), round(m_logs['c'] or 0, 2)])
+        
         t = Table(trend_data)
         t.setStyle(TableStyle([
             ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
@@ -180,14 +191,34 @@ def generate_esg_pdf(self, report_id: int) -> None:
         report.total_carbon_kg = round(total_carbon, 2)
         report.target_kg = target_kg
         report.status = 'done'
-        report.save()
+        report.save(update_fields=['status', 'pdf_file', 'total_energy_kwh', 'total_carbon_kg', 'target_kg'])
+        
         logger.info(f"ESG PDF generated for report {report_id}")
+        
+        # --- FIX 12: EMAIL NOTIFICATION AFTER 3 MIN TIMEOUT ---
+        elapsed = time.time() - start_time
+        if elapsed > 180 and user_email:
+            token = signing_dumps(report.id)
+            # Send notification simulating real mail architecture.
+            try:
+                base_url = getattr(settings, 'FRONTEND_URL', 'http://127.0.0.1:8000')
+                signed_url_full = f"{base_url}/api/carbon/esg-report/download/{token}/"
+                send_mail(
+                    "Your Async ESG Report is Ready",
+                    f"Your requested report took longer than 3 minutes to generate.\n\n"
+                    f"It has now completed successfully. You can download it securely using the 1-hour expiring link below:\n\n"
+                    f"{signed_url_full}",
+                    settings.DEFAULT_FROM_EMAIL if hasattr(settings, 'DEFAULT_FROM_EMAIL') else 'noreply@arkaenergy.com',
+                    [user_email],
+                    fail_silently=True
+                )
+            except Exception as mail_err:
+                logger.warning(f"Failed to send timeout completion email: {mail_err}")
 
     except Exception as exc:
+        report.status = 'error'
+        report.error_message = str(exc)
+        report.save(update_fields=['status', 'error_message'])
         logger.exception(f"ESG PDF generation failed for report {report_id}: {exc}")
-        try:
-            ESGReport.objects.filter(id=report_id).update(status='error')
-        except Exception:
-            pass
-        # Let Celery retry on transient errors
+        # Re-raise so Celery retries up to max_retries
         raise self.retry(exc=exc)

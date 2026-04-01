@@ -111,6 +111,10 @@ class UsageLog(models.Model):
     class Meta:
         unique_together = ('device', 'date')
         ordering = ['-date']
+        indexes = [
+            models.Index(fields=['device', 'date']),
+            models.Index(fields=['date']),
+        ]
 
 class CarbonTarget(models.Model):
     building = models.ForeignKey(Building, on_delete=models.CASCADE, related_name='carbon_targets')
@@ -122,9 +126,9 @@ class CarbonTarget(models.Model):
         unique_together = ('building', 'month', 'year')
 
 class ESGReport(models.Model):
-    # [C2] Status field for async PDF generation tracking
     STATUS_CHOICES = [
         ('pending', 'Pending'),
+        ('processing', 'Processing'),
         ('done', 'Done'),
         ('error', 'Error'),
     ]
@@ -136,7 +140,9 @@ class ESGReport(models.Model):
     target_kg = models.FloatField(null=True, blank=True)
     pdf_file = models.FileField(upload_to='esg_reports/', null=True, blank=True)
     generated_at = models.DateTimeField(auto_now_add=True)
-    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='pending')
+    status = models.CharField(max_length=15, choices=STATUS_CHOICES, default='pending')
+    celery_task_id = models.CharField(max_length=64, null=True, blank=True)
+    error_message = models.TextField(blank=True, default='')
 
     class Meta:
         unique_together = ('building', 'month', 'year')

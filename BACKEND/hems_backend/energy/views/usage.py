@@ -17,7 +17,13 @@ def log_usage(request):
         date_str = request.data.get('date')
         hours_used = float(request.data.get('hours_used', 0))
 
-        device = Device.objects.get(id=device_id)
+        try:
+            device = Device.objects.get(id=device_id)
+        except Device.DoesNotExist:
+            return Response(
+                {"success": False, "error": f"Device ID {device_id} does not exist. Please enter a valid ID."},
+                status=404
+            )
         
         # update_or_create logic
         log, created = UsageLog.objects.update_or_create(
