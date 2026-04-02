@@ -48,6 +48,18 @@ export default {
                     DEFAULT: "hsl(var(--card))",
                     foreground: "hsl(var(--card-foreground))",
                 },
+                brand: {
+                    DEFAULT: '#10b981',
+                    light: '#34d399',
+                    dark: '#059669',
+                    glow: 'rgba(16,185,129,0.15)',
+                },
+                surface: {
+                    base: '#0a0f0d',
+                    card: '#111814',
+                    elevated: '#192119',
+                    border: '#1f2e24',
+                }
             },
             borderRadius: {
                 lg: "var(--radius)",

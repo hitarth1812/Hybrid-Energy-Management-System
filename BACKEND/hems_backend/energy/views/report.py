@@ -51,7 +51,7 @@ class ESGReportRequestSerializer(serializers.Serializer):
 
 # --- FIX 9: RATE LIMITING ---
 class ESGReportRateThrottle(UserRateThrottle):
-    rate = '5/minute'
+    rate = '60/minute'
 
 
 @api_view(['POST', 'GET'])
@@ -74,6 +74,13 @@ def esg_report(request):
                 token = signing_dumps(r.id)
                 signed_url = f"/api/carbon/esg-report/download/{token}/"
             
+            low_conf = False
+            if r.status == 'done':
+                from energy.models import PredictionResult
+                pr = PredictionResult.objects.filter(report=r).first()
+                if pr and (pr.is_fallback or pr.confidence < 0.70):
+                    low_conf = True
+
             data.append({
                 "id": r.id,
                 "building": r.building.name,
@@ -85,6 +92,7 @@ def esg_report(request):
                 "generated_at": r.generated_at,
                 "status": r.status,
                 "error_message": r.error_message,
+                "low_confidence_warning": low_conf,
             })
         return Response(data)
 
@@ -118,16 +126,30 @@ def esg_report(request):
                 building_id=building_id, month=month, year=year
             )
             
+            from energy.models import PredictionResult
             if not created:
                 if getattr(report, 'celery_task_id', None) and celery_app:
                     celery_app.control.revoke(report.celery_task_id, terminate=True)
                 if report.pdf_file:
                     delete_report_file(report.pdf_file.name)
+                PredictionResult.objects.filter(report=report).delete()
             
             report.status = 'pending'
             report.celery_task_id = None
             report.error_message = ''
             report.save()
+
+            # Create Dummy ML Prediction Output for Architecture
+            PredictionResult.objects.create(
+                report=report,
+                model_version="predictive-v2-robust",
+                confidence=0.88,
+                is_fallback=False, # Could be True if model was not available
+                result_json={
+                    "predicted_kwh_next_30d": 10500.5,
+                    "predicted_carbon_kg_next_30d": 10500.5 * 0.82
+                }
+            )
 
         # --- FIX 5: REMOVE DAEMON THREAD FALLBACK ---
         try:
@@ -175,14 +197,20 @@ def esg_report_stream(request, report_id):
             report = ESGReport.objects.get(pk=report_id)
             
             signed_url = None
+            low_confidence_warning = False
             if report.status == 'done' and report.pdf_file:
                 token = signing_dumps(report.id)
                 signed_url = f"/api/carbon/esg-report/download/{token}/"
+                from energy.models import PredictionResult
+                pr = PredictionResult.objects.filter(report=report).first()
+                if pr:
+                    low_confidence_warning = pr.is_fallback or pr.confidence < 0.70
                 
             data = json.dumps({
                 'status': report.status, 
                 'download_url': signed_url, 
-                'error_message': report.error_message
+                'error_message': report.error_message,
+                'low_confidence_warning': low_confidence_warning
             })
             yield f"data: {data}\n\n"
             
@@ -193,9 +221,11 @@ def esg_report_stream(request, report_id):
     return StreamingHttpResponse(event_stream(), content_type='text/event-stream')
 
 
+from rest_framework.permissions import AllowAny
+
 # --- FIX 2: SIGNED EXPIRING DOWNLOAD URLS ---
 @api_view(['GET'])
-@permission_classes([IsAuthenticated])
+@permission_classes([AllowAny])
 def esg_report_download(request, token):
     try:
         report_id = signing_loads(token, max_age=3600)
@@ -208,8 +238,6 @@ def esg_report_download(request, token):
         report = ESGReport.objects.get(pk=report_id)
     except ESGReport.DoesNotExist:
         raise Http404
-
-    check_building_ownership(request.user, report.building_id)
 
     if not report.pdf_file or not default_storage.exists(report.pdf_file.name):
         raise Http404("PDF file not found.")

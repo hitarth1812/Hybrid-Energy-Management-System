@@ -14,10 +14,13 @@ Arka Energy Nexus helps organizations track energy usage, estimate emissions, an
 Main capabilities:
 - Carbon dashboard with KPI-level visibility
 - Building, room, and device-level energy accounting
-- Intelligent bulk upload with AI-assisted parsing
+- Intelligent bulk upload with AI-assisted Groq LLM parsing
 - Carbon target management and usage logging
-- PDF ESG report generation with async status tracking
-- ML-powered power prediction with confidence intervals and monitoring logs
+- PDF ESG report generation with async SSE status tracking
+- ML-powered power prediction (XGBoost + LightGBM + Random Forest ensemble)
+- **[NEW]** Electrical appliance/lighting prediction using dedicated light ML models
+- **[NEW]** Analytics dashboard with manual date inspection and granularity switching
+- JWT authentication with automatic token refresh
 
 ## Repository Structure
 
@@ -38,10 +41,11 @@ HEMS/
 
 ## Tech Stack
 
-- Backend: Django, Django REST Framework, Celery, ReportLab, Pandas
-- Frontend: React, Vite, Tailwind CSS, Framer Motion
+- Backend: Django, Django REST Framework, ReportLab, Pandas, LangChain
+- Frontend: React, Vite, Tailwind CSS, Framer Motion, Recharts
 - Database: PostgreSQL (primary), SQLite (fallback/dev)
-- ML: XGBoost + LightGBM ensemble with quantile interval models
+- ML: XGBoost + LightGBM + Random Forest (dual families: power + light/appliance)
+- LLM: Groq `mixtral-8x7b-32768` for unstructured spreadsheet parsing
 
 ## Quick Start
 
@@ -114,15 +118,19 @@ python manage.py migrate
 
 ## API Highlights
 
-- `/api/buildings/`
-- `/api/rooms/`
-- `/api/devices/`
-- `/api/carbon/dashboard/`
-- `/api/carbon/calculator/`
-- `/api/carbon/usage-logs/`
-- `/api/carbon/targets/`
-- `/api/carbon/esg-report/`
-- `/api/predict/time/?datetime=...`
+| Endpoint | Method | Auth | Purpose |
+|:---|:---|:---|:---|
+| `/api/buildings/` | GET/POST | Required | Building CRUD |
+| `/api/rooms/` | GET/POST | Required | Room CRUD |
+| `/api/devices/` | GET/POST | Required | Device CRUD |
+| `/api/carbon/dashboard/` | GET | Required | CO2 KPIs |
+| `/api/carbon/targets/` | GET/POST | Required | Monthly goals |
+| `/api/carbon/esg-report/` | POST | Required | Trigger PDF report |
+| `/api/energy/predict/` | POST | Required | Power prediction |
+| `/api/energy/predict/light/` | POST | Required | **[NEW]** Appliance prediction |
+| `/api/energy/predict/time/` | GET | Open | Temporal forecast |
+| `/api/energy/smart-upload/preview/` | POST | Required | Parse spreadsheet |
+| `/api/energy/health/` | GET | Open | Health probe |
 
 ## License
 

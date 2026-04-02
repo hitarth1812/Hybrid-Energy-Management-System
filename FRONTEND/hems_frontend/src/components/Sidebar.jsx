@@ -3,7 +3,7 @@ import { NavLink } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
     LayoutDashboard, Server, UploadCloud, Zap, Settings, HelpCircle, Moon, Sun, ChevronRight, AlertCircle,
-    Globe, Clock, Target, FileText
+    Globe, Clock, Target, FileText, Cpu
 } from 'lucide-react';
 import { cn } from '../lib/utils';
 import ArkaLogo from '../assets/arka_logo.png';
@@ -15,13 +15,13 @@ const Sidebar = ({ isDarkMode, toggleTheme, onContactClick }) => {
         { name: 'Devices', icon: Server, path: '/devices' },
         { name: 'Smart Upload', icon: UploadCloud, path: '/smart-upload' },
         { name: 'Energy Usage', icon: Zap, path: '/energy' },
+        { name: 'Analytics', icon: Clock, path: '/analytics' },
+        { name: 'Appliance Prediction', icon: Cpu, path: '/appliance-prediction' },
         { name: 'Time Forecast', icon: Clock, path: '/time-forecast' },
 
         // Carbon Intelligence Platform
         { name: 'Carbon Dashboard', icon: Globe, path: '/carbon' },
-        { name: 'Log Usage', icon: Clock, path: '/carbon/log' },
         { name: 'Carbon Targets', icon: Target, path: '/carbon/targets' },
-        { name: 'ESG Reports', icon: FileText, path: '/carbon/reports' },
     ];
 
     return (
@@ -122,11 +122,8 @@ const Sidebar = ({ isDarkMode, toggleTheme, onContactClick }) => {
 
             {/* Bottom Actions */}
             <div className="space-y-4 mb-2">
-                {/* Settings & Contact */}
+                {/* Contact */}
                 <div className="space-y-2 pt-4 border-t border-slate-200/50 dark:border-white/5">
-                    <button className="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-slate-600 dark:text-white/60 hover:text-slate-900 dark:hover:text-white hover:bg-white/40 dark:hover:bg-white/5 transition-all text-sm font-semibold hover:pl-5 hover:shadow-sm">
-                        <Settings className="w-4 h-4" /> Settings
-                    </button>
                     <button onClick={onContactClick} className="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-slate-600 dark:text-white/60 hover:text-slate-900 dark:hover:text-white hover:bg-white/40 dark:hover:bg-white/5 transition-all text-sm font-semibold hover:pl-5 hover:shadow-sm">
                         <HelpCircle className="w-4 h-4" /> Contact Us
                     </button>

@@ -16,6 +16,7 @@ const ESGReportPage = () => {
     // idle -> submitting -> pending -> processing -> done/error/timeout
     const [status, setStatus] = useState('idle');
     const [downloadUrl, setDownloadUrl] = useState(null);
+    const [lowConfidenceWarning, setLowConfidenceWarning] = useState(false);
     const [errorMessage, setErrorMessage] = useState('');
 
     useEffect(() => {
@@ -110,6 +111,7 @@ const ESGReportPage = () => {
                 if (data.status === 'done') {
                     forceCloseConnection();
                     setDownloadUrl(data.download_url);
+                    setLowConfidenceWarning(data.low_confidence_warning || false);
                     triggerDownload(data.download_url);
                 }
                 else if (data.status === 'error') {
@@ -150,6 +152,7 @@ const ESGReportPage = () => {
         setStatus('idle');
         setErrorMessage('');
         setDownloadUrl(null);
+        setLowConfidenceWarning(false);
         fetchReports();
     };
 
@@ -277,9 +280,17 @@ const ESGReportPage = () => {
                             <span className="font-semibold text-base leading-tight">Secure signed PDF successfully generated.</span>
                         </div>
                         <div className="flex items-center gap-4 text-sm font-semibold">
-                            <button onClick={() => triggerDownload(downloadUrl)} className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white shadow transition-all rounded-lg flex items-center gap-2 active:scale-95">
-                                <Download className="w-4 h-4"/> Download PDF
-                            </button>
+                            <div className="relative group inline-flex">
+                                <button onClick={() => triggerDownload(downloadUrl)} className={cn("px-4 py-2 text-white shadow transition-all rounded-lg flex items-center gap-2 active:scale-95", lowConfidenceWarning ? "bg-amber-500 hover:bg-amber-600" : "bg-green-600 hover:bg-green-700")}>
+                                    <Download className="w-4 h-4"/> Download PDF
+                                </button>
+                                {lowConfidenceWarning && (
+                                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-max max-w-xs px-3 py-2 bg-slate-900 text-amber-400 text-xs rounded shadow-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10 text-center">
+                                        Low Confidence Warning: Fallback model used or low aggregate forecast confidence.
+                                        <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-slate-900 pointer-events-none"></div>
+                                    </div>
+                                )}
+                            </div>
                             <button onClick={resetState} className="text-slate-500 dark:text-slate-400 hover:text-green-600 dark:hover:text-green-400 mx-2 hover:underline inline-flex items-baseline">
                                 Generate Another Link
                             </button>
@@ -358,14 +369,22 @@ const ESGReportPage = () => {
                                             </td>
                                             <td className="p-4 text-right">
                                                 {r.download_url && r.status === 'done' ? (
-                                                    <a
-                                                        href={`http://127.0.0.1:8000${r.download_url}`}
-                                                        target="_blank"
-                                                        rel="noopener noreferrer"
-                                                        className="inline-flex items-center gap-2 px-4 py-1.5 bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 text-slate-800 dark:text-white text-xs font-bold uppercase tracking-wide rounded-lg transition-colors cursor-pointer"
-                                                    >
-                                                        <Download className="w-3.5 h-3.5" /> Direct Pull
-                                                    </a>
+                                                    <div className="relative group inline-block">
+                                                        <a
+                                                            href={`http://127.0.0.1:8000${r.download_url}`}
+                                                            target="_blank"
+                                                            rel="noopener noreferrer"
+                                                            className={cn("inline-flex items-center gap-2 px-4 py-1.5 text-xs font-bold uppercase tracking-wide rounded-lg transition-colors cursor-pointer", r.low_confidence_warning ? "bg-amber-100 dark:bg-amber-900/50 text-amber-800 dark:text-amber-400 hover:bg-amber-200 dark:hover:bg-amber-900/70" : "bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 text-slate-800 dark:text-white")}
+                                                        >
+                                                            <Download className="w-3.5 h-3.5" /> Direct Pull
+                                                        </a>
+                                                        {r.low_confidence_warning && (
+                                                            <div className="absolute bottom-full right-0 mb-2 w-max max-w-[200px] px-3 py-1.5 bg-slate-900 text-amber-400 text-xs rounded shadow-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10 whitespace-normal text-left">
+                                                                Low Confidence Forecast
+                                                                <div className="absolute top-full right-6 border-4 border-transparent border-t-slate-900 pointer-events-none"></div>
+                                                            </div>
+                                                        )}
+                                                    </div>
                                                 ) : (
                                                     <span className="text-slate-400 text-xs italic">{r.status === 'error' ? 'Terminated' : 'Computing Hash...'}</span>
                                                 )}

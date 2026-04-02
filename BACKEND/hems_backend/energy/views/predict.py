@@ -7,7 +7,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.throttling import UserRateThrottle, AnonRateThrottle
 
-from ml_models.predictor import predict, FEATURES
+from ml_models.predictor import predict, predict_light, FEATURES
 from energy.models import PredictionLog
 
 logger = logging.getLogger(__name__)
@@ -141,5 +141,40 @@ class PredictByTimeView(APIView):
         return Response(result)
 
 
+class PredictLightView(APIView):
+
+    def post(self, request):
+        if not request.user or not request.user.is_authenticated:
+            return Response(
+                {"error": "This endpoint requires authentication."},
+                status=status.HTTP_401_UNAUTHORIZED,
+            )
+
+        data = request.data
+        missing = [f for f in FEATURES if f not in data]
+        if missing:
+            return Response(
+                {"error": f"Missing features: {missing}"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        try:
+            result = predict_light(data)
+            if result.get("fallback"):
+                return Response(
+                    {"error": result["error"], "fallback": True},
+                    status=status.HTTP_503_SERVICE_UNAVAILABLE,
+                )
+            if "predicted_power_kw" in result:
+                result["predicted_co2_kg"] = round(result["predicted_power_kw"] * 0.45, 2)
+            return Response(result)
+        except Exception as exc:
+            logger.exception("predict_light error")
+            return Response(
+                {"error": str(exc)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
+
+
 predict_power = PredictView.as_view()
 predict_by_time = PredictByTimeView.as_view()
+predict_light_view = PredictLightView.as_view()

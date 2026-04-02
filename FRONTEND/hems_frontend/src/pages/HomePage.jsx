@@ -71,7 +71,7 @@ const HomePage = () => {
                         </div>
 
                         {/* Card 2: Bottom Left - Analytics */}
-                        <div onClick={() => navigate('/dashboard')} className="absolute bottom-20 left-0 w-56 pointer-events-auto cursor-pointer">
+                        <div onClick={() => navigate('/analytics')} className="absolute bottom-20 left-0 w-56 pointer-events-auto cursor-pointer">
                             <FloatingCard delay={1.5} depth={1.5}>
                                 <div className="p-4 flex items-center gap-4 bg-white/80 dark:bg-black/40 backdrop-blur-md rounded-xl border border-gray-200 dark:border-white/10 shadow-lg">
                                     <div className="w-10 h-10 rounded-lg bg-blue-500/20 flex items-center justify-center">

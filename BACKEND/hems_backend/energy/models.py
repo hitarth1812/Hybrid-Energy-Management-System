@@ -200,3 +200,23 @@ class MLSystemEvent(models.Model):
     def __str__(self):
         return f"{self.severity} - {self.event_type} at {self.created_at}"
 
+
+class PredictionResult(models.Model):
+    report        = models.OneToOneField(ESGReport, on_delete=models.CASCADE)
+    model_version = models.CharField(max_length=64)
+    predicted_at  = models.DateTimeField(auto_now_add=True)
+    confidence    = models.FloatField()  # 0.0 - 1.0
+    is_fallback   = models.BooleanField(default=False)
+    result_json   = models.JSONField()   # Full per-device forecast payload
+
+class OutputLog(models.Model):
+    device        = models.ForeignKey(Device, on_delete=models.CASCADE)
+    timestamp     = models.DateTimeField()
+    output_value  = models.FloatField()   # Units depend on device type
+    output_unit   = models.CharField(max_length=32)
+
+class CarbonEmissionLog(models.Model):
+    usage_log       = models.OneToOneField(UsageLog, on_delete=models.CASCADE)
+    scope           = models.CharField(max_length=8, choices=[('scope1','Scope 1'),('scope2','Scope 2')])
+    emission_factor = models.FloatField()   # kg CO2 per kWh
+    carbon_kg       = models.FloatField()

@@ -31,6 +31,7 @@ urlpatterns = [
     path('carbon/calculate/', views.calculate_carbon),
     # [C1] POST predict/ is internal-only (auth required); GET predict/time/ is the public endpoint
     path('predict/', views.predict_power, name='predict-power'),
+    path('predict/light/', views.predict_light_view, name='predict-light'),
     path('predict/time/', views.predict_by_time, name='predict-by-time'),
 
     # [H4] Deployment health probe — no auth required, safe for load-balancers

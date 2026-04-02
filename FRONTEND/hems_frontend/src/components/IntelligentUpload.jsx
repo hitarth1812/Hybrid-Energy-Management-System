@@ -14,7 +14,7 @@ import {
     TableRow,
 } from "@/components/ui/table"
 
-const API_BASE_URL = 'http://localhost:8000/api'
+const API_BASE_URL = `${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/api`
 
 export default function IntelligentUpload({ onUploadSuccess }) {
     const navigate = useNavigate()
@@ -96,8 +96,12 @@ export default function IntelligentUpload({ onUploadSuccess }) {
         formData.append('file', file)
 
         try {
+            const token = localStorage.getItem('access_token')
             const response = await fetch(`${API_BASE_URL}/smart-upload/preview/`, {
                 method: 'POST',
+                headers: {
+                    ...(token && { Authorization: `Bearer ${token}` })
+                },
                 body: formData,
             })
 
@@ -139,10 +143,12 @@ export default function IntelligentUpload({ onUploadSuccess }) {
         setError(null)
 
         try {
+            const token = localStorage.getItem('access_token')
             const response = await fetch(`${API_BASE_URL}/smart-upload/save/`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
+                    ...(token && { Authorization: `Bearer ${token}` })
                 },
                 body: JSON.stringify({ devices: previewData }),
             })

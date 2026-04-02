@@ -3,9 +3,10 @@ import MainLayout from './layouts/MainLayout';
 import ProtectedRoute from './components/ProtectedRoute';
 import LoginPage from './pages/LoginPage';
 import HomePage from './pages/HomePage';
-import Dashboard from './pages/Dashboard';
 import Devices from './pages/Devices';
 import EnergyUsage from './pages/EnergyUsage';
+import AnalyticsDashboard from './pages/AnalyticsDashboard';
+import AppliancePrediction from './pages/AppliancePrediction';
 import TimeForecast from './pages/TimeForecast';
 import SmartUpload from './pages/SmartUpload';
 import CarbonDashboard from './pages/CarbonDashboard';
@@ -26,10 +27,12 @@ export default function App() {
         )}>
           <Route index element={<HomePage />} />
           <Route path="home" element={<HomePage />} />
-          <Route path="dashboard" element={<Dashboard />} />
+          <Route path="dashboard" element={<HomePage />} />
           <Route path="devices" element={<Devices />} />
           <Route path="smart-upload" element={<SmartUpload />} />
           <Route path="energy" element={<EnergyUsage />} />
+          <Route path="analytics" element={<AnalyticsDashboard />} />
+          <Route path="appliance-prediction" element={<AppliancePrediction />} />
           <Route path="time-forecast" element={<TimeForecast />} />
 
           {/* Carbon Intelligence Platform Routes */}
