@@ -184,6 +184,13 @@ GROQ_API_KEY = os.getenv('GROQ_API_KEY', '')
 # [L1] Single source-of-truth for the India grid emission factor (kg CO2/kWh)
 EMISSION_FACTOR = 0.82
 
+# ML/ESG report settings
+ML_MODELS_DIR = BASE_DIR / 'ml_models'
+ESG_CO2_FACTOR = 0.82
+ESG_COST_PER_KWH = 8.0
+ESG_HOURS_PER_MONTH = 720
+ESG_EFFICIENCY_BASELINE_KW = 5.0
+
 # ---------------------------------------------------------------------------
 # [C2] Celery — production-grade background task queue
 # ---------------------------------------------------------------------------

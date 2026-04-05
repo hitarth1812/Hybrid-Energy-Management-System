@@ -1,6 +1,6 @@
 # Arka Energy Nexus
 
-AI-powered Hybrid Energy Management System for carbon monitoring, ESG reporting, and operational efficiency.
+AI-powered Hybrid Energy Management System for energy monitoring, ML-powered prediction, and operational efficiency.
 
 ![Backend](https://img.shields.io/badge/Backend-Django%20%2B%20DRF-0C4B33?style=flat-square&logo=django)
 ![Frontend](https://img.shields.io/badge/Frontend-React%20%2B%20Vite-0EA5E9?style=flat-square&logo=react)
@@ -9,17 +9,16 @@ AI-powered Hybrid Energy Management System for carbon monitoring, ESG reporting,
 
 ## Overview
 
-Arka Energy Nexus helps organizations track energy usage, estimate emissions, and generate ESG reports from a single platform.
+Arka Energy Nexus helps organizations track energy usage andestimate emissions from a single platform.
 
 Main capabilities:
 - Carbon dashboard with KPI-level visibility
 - Building, room, and device-level energy accounting
 - Intelligent bulk upload with AI-assisted Groq LLM parsing
-- Carbon target management and usage logging
-- PDF ESG report generation with async SSE status tracking
+- Carbon target management
 - ML-powered power prediction (XGBoost + LightGBM + Random Forest ensemble)
-- **[NEW]** Electrical appliance/lighting prediction using dedicated light ML models
-- **[NEW]** Analytics dashboard with manual date inspection and granularity switching
+- Electrical appliance/lighting prediction using dedicated light ML models
+- Analytics dashboard with manual date inspection and granularity switching
 - JWT authentication with automatic token refresh
 
 ## Repository Structure
@@ -98,8 +97,10 @@ DEBUG=True
 DATABASE_URL=postgresql://postgres:password@localhost:5432/hems_db
 ALLOWED_HOSTS=localhost,127.0.0.1
 CORS_ALLOWED_ORIGINS=http://127.0.0.1:5173,http://localhost:5173
-GROQ_API_KEY=your-groq-api-key
+GROQ_API_KEY=your-groq-api-key   # Required — no hardcoded fallback
 ```
+
+> **Important**: `GROQ_API_KEY` is now strictly loaded from the environment. The hardcoded fallback key was removed from `services/device_parser.py`. Smart Upload will silently skip LLM parsing if this key is not set.
 
 ## Useful Commands
 
@@ -125,12 +126,13 @@ python manage.py migrate
 | `/api/devices/` | GET/POST | Required | Device CRUD |
 | `/api/carbon/dashboard/` | GET | Required | CO2 KPIs |
 | `/api/carbon/targets/` | GET/POST | Required | Monthly goals |
-| `/api/carbon/esg-report/` | POST | Required | Trigger PDF report |
 | `/api/energy/predict/` | POST | Required | Power prediction |
-| `/api/energy/predict/light/` | POST | Required | **[NEW]** Appliance prediction |
+| `/api/energy/predict/light/` | POST | Required | Appliance prediction |
 | `/api/energy/predict/time/` | GET | Open | Temporal forecast |
 | `/api/energy/smart-upload/preview/` | POST | Required | Parse spreadsheet |
+| `/api/energy/smart-upload/save/` | POST | Required | Commit devices to DB |
 | `/api/energy/health/` | GET | Open | Health probe |
+
 
 ## License
 

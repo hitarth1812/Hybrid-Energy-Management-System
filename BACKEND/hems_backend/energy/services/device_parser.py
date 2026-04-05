@@ -34,6 +34,10 @@ class DeviceData(BaseModel):
     star_rating: Optional[int] = Field(ge=1, le=5, default=None)
     ton: Optional[float] = Field(gt=0, default=None)
 
+class DeviceList(BaseModel):
+    """List of parsed devices for batch LLM processing"""
+    devices: List[DeviceData]
+
 
 
 # Default watt ratings for when spreadsheet has no watt value
@@ -66,13 +70,17 @@ class DeviceSpreadsheetParser:
     def __init__(self):
         """Initialize parser"""
         api_key = getattr(settings, 'GROQ_API_KEY', None)
+        if not api_key:
+            # Removed hardcoded key for GitHub push protection
+            api_key = None
+        
         if api_key:
             self.llm = ChatGroq(
                 groq_api_key=api_key,
-                model_name="mixtral-8x7b-32768",
+                model_name="llama-3.1-8b-instant",
                 temperature=0
             )
-            self.output_parser = PydanticOutputParser(pydantic_object=DeviceData)
+            self.output_parser = PydanticOutputParser(pydantic_object=DeviceList)
         else:
             self.llm = None
             self.output_parser = None
@@ -364,14 +372,24 @@ class DeviceSpreadsheetParser:
         df.columns = [str(c).strip() for c in df.columns]
         devices = []
         
+        if use_llm and self.llm:
+            try:
+                # Group into chunks to avoid token limits
+                chunk_size = 30
+                for i in range(0, len(df), chunk_size):
+                    chunk_df = df.iloc[i:i+chunk_size]
+                    chunk_data = chunk_df.to_dict(orient="records")
+                    parsed_chunk = self._parse_batch_with_llm(chunk_data)
+                    devices.extend(parsed_chunk)
+                return devices
+            except Exception as e:
+                print(f"Batch LLM parsing failed, falling back to heuristic: {e}")
+                # Fallback on error
+                devices = []
+
         for idx, row in df.iterrows():
             row_dict = row.to_dict()
-            
-            if use_llm and self.llm:
-                device = self._parse_row_with_llm(row_dict)
-            else:
-                device = self._parse_row_heuristic(row_dict)
-            
+            device = self._parse_row_heuristic(row_dict)
             if device:
                 devices.append(device)
         
@@ -417,35 +435,38 @@ class DeviceSpreadsheetParser:
         
         return device
     
-    def _parse_row_with_llm(self, row_data: Dict[str, Any]) -> Dict[str, Any]:
-        """Parse a single row using LLM"""
-        flat_text = " | ".join(str(v) for v in row_data.values() if pd.notna(v))
+    def _parse_batch_with_llm(self, chunk_data: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+        """Parse multiple rows using LLM"""
+        csv_text = pd.DataFrame(chunk_data).to_csv(index=False)
         
         prompt = ChatPromptTemplate.from_template(
             """You are a strict electrical audit parser.
-Extract structured device data from this row.
+Analyze the following CSV data representing devices.
+For each row, extract the structured device data.
 Rules:
 1. Detect device type (FAN, AC, LIGHT, PC, COOLER, PROJECTOR, PRINTER, TV, OTHER).
 2. Detect subtype.
 3. Extract quantity (default 1).
 4. Extract watt rating (convert kW to W). If missing, estimate realistic watt.
 5. Extract brand.
-Return strict JSON.
+Return strict JSON. YOU MUST RETURN ONLY VALID JSON. NO MARKDOWN. NO CODE BLOCKS. NO EXPLANATIONS.
 
 {format_instructions}
 
-Row: {row_text}
+CSV Data:
+{csv_text}
 """
         )
         chain = prompt | self.llm | self.output_parser
         try:
             result = chain.invoke({
-                "row_text": flat_text,
+                "csv_text": csv_text,
                 "format_instructions": self.output_parser.get_format_instructions()
             })
-            return result.dict()
-        except:
-            return self._parse_row_heuristic(row_data)
+            return [d.dict() for d in result.devices]
+        except Exception as e:
+            print(f"Batch LLM error: {e}")
+            return [self._parse_row_heuristic(r) for r in chunk_data]
     
     # ========================================================================
     # UTILITIES

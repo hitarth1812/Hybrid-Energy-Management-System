@@ -5,7 +5,8 @@ import PredictionResultCards from '../components/energy/PredictionResultCards';
 import ComputedFeatures from '../components/energy/ComputedFeatures';
 import MiniPredictionChart from '../components/charts/MiniPredictionChart';
 import { useAppliancePrediction } from '../hooks/useAppliancePrediction';
-import { Zap, Trash2 } from 'lucide-react';
+import { Zap, Trash2, Download } from 'lucide-react';
+import api from '../utils/axiosInstance';
 
 const AppliancePrediction = () => {
     const { runPrediction, isLoading, result, predictionHistory, clearHistory } = useAppliancePrediction();
@@ -15,15 +16,39 @@ const AppliancePrediction = () => {
         runPrediction(formData);
     };
 
+    const downloadReport = async (type = 'light') => {
+        try {
+            const res = await api.get(`/api/energy/report/?type=${type}`,
+                { responseType: 'blob' }
+            );
+            const url = URL.createObjectURL(new Blob([res.data], {type: 'application/pdf'}));
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `power_report_${type}.pdf`;
+            a.click();
+            URL.revokeObjectURL(url);
+        } catch (err) {
+            console.error("Failed to download PDF:", err);
+        }
+    };
+
     return (
         <div className="max-w-6xl mx-auto p-4 md:p-6 fade-in-up">
             <SectionHeader 
                 title="Electrical Appliances Predictor" 
                 subtitle="Live load parameters and ML predictions specifically trained on lighting/appliance profiles."
                 rightElement={
-                    <div className="bg-brand/10 text-brand px-3 py-1.5 rounded-full text-xs font-bold uppercase tracking-widest flex items-center gap-2">
-                        <span className="w-2 h-2 rounded-full bg-brand animate-pulse"></span>
-                        Live Connection
+                    <div className="flex gap-4">
+                        <button 
+                            onClick={() => downloadReport('light')}
+                            className="bg-brand text-zinc-900 border border-brand/20 px-3 py-1.5 rounded-lg text-sm font-bold tracking-wide flex items-center gap-2 hover:bg-brand/90 transition-colors"
+                        >
+                            <Download size={16} /> PDF Report
+                        </button>
+                        <div className="bg-brand/10 text-brand px-3 py-1.5 rounded-full text-xs font-bold uppercase tracking-widest flex items-center gap-2">
+                            <span className="w-2 h-2 rounded-full bg-brand animate-pulse"></span>
+                            Live Connection
+                        </div>
                     </div>
                 }
             />

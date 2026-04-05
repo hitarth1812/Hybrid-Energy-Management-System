@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import SectionHeader from '../components/ui/SectionHeader';
 import KPICard from '../components/ui/KPICard';
 import TrendLineChart from '../components/charts/TrendLineChart';
@@ -9,15 +9,52 @@ import RecommendationsEngine from '../components/analytics/RecommendationsEngine
 import CarbonIntelligence from '../components/analytics/CarbonIntelligence';
 import PeakHeatmap from '../components/charts/PeakHeatmap';
 import LoadingSpinner from '../components/ui/LoadingSpinner';
+import { Link } from 'react-router-dom';
+import api from '../utils/axiosInstance';
 
 import { useAnalytics } from '../hooks/useAnalytics';
 import { useForecast } from '../hooks/useForecast';
-import { Zap, IndianRupee, Leaf, Activity, ArrowUp } from 'lucide-react';
+import { Zap, IndianRupee, Leaf, Activity, ArrowUp, FileText } from 'lucide-react';
 import { formatCurrency, formatNumber } from '../utils/formatters';
 
 const AnalyticsDashboard = () => {
+    const [isDownloadingReport, setIsDownloadingReport] = useState(false);
     const { data: analyticsData, isLoading: isAnalyticsLoading, granularity, setGranularity, selectedDate, setSelectedDate } = useAnalytics('daily');
     const { forecast: forecastData, isLoading: isForecastLoading } = useForecast(72);
+
+    const downloadPowerReport = async (type = 'power') => {
+        setIsDownloadingReport(true);
+        try {
+            const res = await api.get(`/api/energy/report/?type=${type}`, { responseType: 'blob' });
+            const url = URL.createObjectURL(new Blob([res.data], { type: 'application/pdf' }));
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `power_prediction_report_${type}_${new Date().toISOString().slice(0, 10)}.pdf`;
+            a.click();
+            URL.revokeObjectURL(url);
+        } catch (err) {
+            console.error('Failed to download Power report:', err);
+        } finally {
+            setIsDownloadingReport(false);
+        }
+    };
+
+    const downloadESGReport = async () => {
+        setIsDownloadingReport(true);
+        try {
+            const res = await api.get('/api/energy/esg-report/', { responseType: 'blob' });
+            const url = URL.createObjectURL(new Blob([res.data], { type: 'application/pdf' }));
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `esg_report_${new Date().toISOString().slice(0, 10)}.pdf`;
+            a.click();
+            URL.revokeObjectURL(url);
+        } catch (err) {
+            console.error('Failed to download ESG report:', err);
+        } finally {
+            setIsDownloadingReport(false);
+        }
+    };
 
     if (isAnalyticsLoading && !analyticsData) {
         return (
@@ -33,6 +70,43 @@ const AnalyticsDashboard = () => {
                 title="Energy Intelligence" 
                 subtitle={`Live telemetry analysis running. Last update: ${new Date().toLocaleTimeString()}`}
             />
+
+            {/* ESG Report Lab Quick Access */}
+            <div className="bg-surface-card border border-surface-border rounded-2xl p-4 md:p-5 shadow-lg mb-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                <div className="flex items-start gap-3">
+                    <div className="p-2 rounded-xl bg-brand/15 text-brand">
+                        <FileText size={18} />
+                    </div>
+                    <div>
+                        <h3 className="text-white font-bold tracking-wide">ESG PDF Report Generator</h3>
+                        <p className="text-sm text-zinc-400">
+                            Open Report Lab to generate and download monthly ESG PDFs for selected buildings.
+                        </p>
+                    </div>
+                </div>
+                <Link
+                    to="/carbon/reports"
+                    className="inline-flex items-center justify-center px-4 py-2 rounded-lg bg-brand/20 border border-brand/40 text-brand font-semibold hover:bg-brand/30 transition-colors"
+                >
+                    Open Report Lab
+                </Link>
+                <div className="flex gap-2">
+                    <button
+                        onClick={() => downloadPowerReport('power')}
+                        disabled={isDownloadingReport}
+                        className="inline-flex items-center justify-center px-4 py-2 rounded-lg bg-indigo-500/20 border border-indigo-500/40 text-indigo-400 font-semibold hover:bg-indigo-500/30 disabled:opacity-60 transition-colors"
+                    >
+                        Download Power Prediction PDF
+                    </button>
+                    <button
+                        onClick={downloadESGReport}
+                        disabled={isDownloadingReport}
+                        className="inline-flex items-center justify-center px-4 py-2 rounded-lg bg-brand text-zinc-900 font-semibold hover:bg-brand/90 disabled:opacity-60 transition-colors"
+                    >
+                        {isDownloadingReport ? 'Generating...' : 'Download ESG Report'}
+                    </button>
+                </div>
+            </div>
 
             {/* KPI Cards Row */}
             <div className="flex gap-4 overflow-x-auto pb-4 mb-4 scrollbar-hide">

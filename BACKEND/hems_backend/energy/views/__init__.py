@@ -7,7 +7,7 @@ from .dashboard import (
     monthly_trend
 )
 from .target import set_carbon_target
-from .report import esg_report, esg_report_stream, esg_report_download
+from .report import esg_report, esg_report_stream, esg_report_download, download_power_report, download_esg_report
 from .smart_upload import smart_upload_preview, smart_upload_save
 from .calculator import calculate_carbon
 from .auth import LogoutView, me

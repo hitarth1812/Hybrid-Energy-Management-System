@@ -29,6 +29,10 @@ urlpatterns = [
     path('carbon/esg-report/stream/<int:report_id>/', views.esg_report_stream),
     path('carbon/esg-report/download/<str:token>/', views.esg_report_download),
     path('carbon/calculate/', views.calculate_carbon),
+    
+    path('energy/report/', views.download_power_report, name='power-report'),
+    path('energy/esg-report/', views.download_esg_report, name='esg-report'),
+    
     # [C1] POST predict/ is internal-only (auth required); GET predict/time/ is the public endpoint
     path('predict/', views.predict_power, name='predict-power'),
     path('predict/light/', views.predict_light_view, name='predict-light'),
