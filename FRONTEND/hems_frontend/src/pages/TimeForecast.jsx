@@ -25,7 +25,10 @@ const TimeForecast = () => {
     try {
       const apiBase = import.meta.env.VITE_API_URL || 'http://localhost:8000'
       const url = `${apiBase}/api/predict/time/?datetime=${encodeURIComponent(dateTime)}`
-      const response = await fetch(url)
+      
+      const token = localStorage.getItem('access_token')
+      const headers = token ? { 'Authorization': `Bearer ${token}` } : {}
+      const response = await fetch(url, { headers })
 
       if (!response.ok) {
         const err = await response.json().catch(() => ({}))

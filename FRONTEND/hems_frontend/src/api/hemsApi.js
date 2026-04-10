@@ -74,7 +74,12 @@ export const getForecast = async (hours = 72) => {
     try {
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 3000);
-        const res = await fetch(`${BASE_URL}/forecast?hours=${hours}`, { signal: controller.signal });
+        const token = localStorage.getItem('access_token');
+        const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
+        const res = await fetch(`${BASE_URL}/forecast?hours=${hours}`, { 
+            signal: controller.signal,
+            headers 
+        });
         clearTimeout(timeoutId);
         if (!res.ok) throw new Error("Backend not OK");
         return await res.json();
@@ -104,7 +109,12 @@ export const getAnalytics = async (granularity = 'daily', selectedDate = null) =
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 3000);
         const dateQuery = selectedDate ? `&date=${selectedDate}` : '';
-        const res = await fetch(`${BASE_URL}/analytics?granularity=${granularity}${dateQuery}`, { signal: controller.signal });
+        const token = localStorage.getItem('access_token');
+        const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
+        const res = await fetch(`${BASE_URL}/analytics?granularity=${granularity}${dateQuery}`, { 
+            signal: controller.signal,
+            headers 
+        });
         clearTimeout(timeoutId);
         if (!res.ok) throw new Error("Backend not OK");
         return await res.json();

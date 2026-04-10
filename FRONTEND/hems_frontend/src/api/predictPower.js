@@ -11,7 +11,11 @@ export async function predictPower(isoString) {
   const url = new URL(`${API_BASE}/api/predict/time/`);
   url.searchParams.set("datetime", isoString);
 
-  const res = await fetch(url.toString(), { method: "GET" });
+  const token = localStorage.getItem('access_token');
+  const headers = {};
+  if (token) headers['Authorization'] = `Bearer ${token}`;
+
+  const res = await fetch(url.toString(), { method: "GET", headers });
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
     throw new Error(err.error || `Prediction failed (HTTP ${res.status})`);
@@ -24,9 +28,13 @@ export async function predictPower(isoString) {
  * @param {object} payload - The feature dictionary matching the model.
  */
 export async function predictCustomPower(payload) {
+  const token = localStorage.getItem('access_token');
+  const headers = { "Content-Type": "application/json" };
+  if (token) headers['Authorization'] = `Bearer ${token}`;
+
   const res = await fetch(`${API_BASE}/api/predict/`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers,
     body: JSON.stringify(payload)
   });
   if (!res.ok) {
