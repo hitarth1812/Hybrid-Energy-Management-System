@@ -15,6 +15,6 @@ services:
           property: connectionString
       - key: GROQ_API_KEY
         sync: false
-  - type: psql
-    name: hems-db
+databases:
+  - name: hems-db
     plan: free
