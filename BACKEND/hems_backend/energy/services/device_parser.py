@@ -70,9 +70,6 @@ class DeviceSpreadsheetParser:
     def __init__(self):
         """Initialize parser"""
         api_key = getattr(settings, 'GROQ_API_KEY', None)
-        if not api_key:
-            # Removed hardcoded key for GitHub push protection
-            api_key = None
         
         if api_key:
             self.llm = ChatGroq(
