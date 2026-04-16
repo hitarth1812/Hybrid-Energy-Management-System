@@ -4,7 +4,7 @@ services:
     env: python
     pythonVersion: '3.12'
     buildCommand: "bash BACKEND/hems_backend/render-build.sh"
-    startCommand: "cd BACKEND/hems_backend && gunicorn hems_backend.wsgi:application --bind 0.0.0.0:$PORT --workers 2"
+    startCommand: "bash BACKEND/hems_backend/render-start.sh"
     envVars:
       - key: DJANGO_SECRET_KEY
         generateValue: true
