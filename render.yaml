@@ -4,8 +4,10 @@ services:
     env: python
     pythonVersion: '3.12'
     buildCommand: "bash BACKEND/hems_backend/render-build.sh"
-    startCommand: "bash BACKEND/hems_backend/render-start.sh"
+    startCommand: "python -m gunicorn --chdir BACKEND/hems_backend hems_backend.wsgi:application --bind 0.0.0.0:$PORT --workers 2"
     envVars:
+      - key: PYTHONPATH
+        value: /opt/render/project/src/BACKEND/hems_backend
       - key: DJANGO_SECRET_KEY
         generateValue: true
       - key: DEBUG
