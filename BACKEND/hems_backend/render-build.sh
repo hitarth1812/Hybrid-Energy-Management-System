@@ -1,8 +1,10 @@
 #!/usr/bin/env bash
 set -o errexit
 
-# Navigate to the Django project directory
-cd BACKEND/hems_backend
+# Navigate to backend directory (works from repo root or if already in backend)
+if [ ! -f "requirements.txt" ]; then
+    cd BACKEND/hems_backend
+fi
 
 pip install -r requirements.txt
 python manage.py collectstatic --no-input
