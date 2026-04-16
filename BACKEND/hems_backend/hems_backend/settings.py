@@ -150,9 +150,8 @@ else:
         "http://127.0.0.1:5175",
     ]
 
-# Groq API
-GROQ_API_KEY = os.environ.get('GROQ_API_KEY', '')   "http://127.0.0.1:5175",
-]
+# Groq API Configuration
+GROQ_API_KEY = os.environ.get('GROQ_API_KEY', '')
 
 # Django REST Framework Configuration
 REST_FRAMEWORK = {
