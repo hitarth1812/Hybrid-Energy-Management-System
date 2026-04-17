@@ -130,6 +130,23 @@ const LoginPage = () => {
               Forgot password?
             </Link>
           </div>
+
+          {/* Admin Credentials - Development Reference */}
+          <div className="mt-8 pt-6 border-t border-white/10">
+            <div className="bg-white/5 border border-white/10 rounded-lg p-4 space-y-3">
+              <p className="text-xs uppercase tracking-widest text-white/50 font-semibold">Demo Admin Credentials</p>
+              <div className="space-y-2 text-sm">
+                <div className="flex justify-between items-center">
+                  <span className="text-white/60">Username:</span>
+                  <code className="bg-black/40 px-3 py-1 rounded text-emerald-400 font-mono text-xs">admin</code>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-white/60">Password:</span>
+                  <code className="bg-black/40 px-3 py-1 rounded text-emerald-400 font-mono text-xs">admin123</code>
+                </div>
+              </div>
+            </div>
+          </div>
         </GlassContainer>
       </div>
     </div>

@@ -25,8 +25,8 @@ def health_check(request):
 
     # --- ML Models ---
     try:
-        from ml_models.predictor import _xgb, _lr  # noqa: F401
-        ml_ok = (_xgb is not None) and (_lr is not None)
+        from ml_models.predictor import _xgb, _lgb  # noqa: F401
+        ml_ok = (_xgb is not None) or (_lgb is not None)
     except Exception as e:
         ml_ok = False
         detail['ml_error'] = str(e)

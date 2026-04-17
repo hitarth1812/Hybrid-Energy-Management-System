@@ -37,8 +37,10 @@ except Exception as e:
     _xgb = None
 
 try:
-    _lgb = lgb.Booster(model_file=LGB_PATH)
-    logger.info("LightGBM model loaded successfully.")
+    # Temporarily disable LightGBM loading due to model file corruption
+    # _lgb = lgb.Booster(model_file=LGB_PATH)
+    logger.warning("LightGBM model loading skipped (corrupted model files)")
+    _lgb = None
 except Exception as e:
     logger.error(f"LightGBM model load failed: {e}")
     _lgb = None
@@ -62,10 +64,13 @@ except Exception as e:
     logger.error(f"XGBoost Light load failed: {e}")
 
 try:
-    _lgb_light = lgb.Booster(model_file=LGB_LIGHT_PATH)
-    logger.info("LightGBM Light model loaded.")
+    # Temporarily disable LightGBM Light loading due to model file corruption
+    # _lgb_light = lgb.Booster(model_file=LGB_LIGHT_PATH)
+    logger.warning("LightGBM Light model loading skipped (corrupted model files)")
+    _lgb_light = None
 except Exception as e:
     logger.error(f"LightGBM Light load failed: {e}")
+    _lgb_light = None
 
 try:
     _rf_light = joblib.load(RF_LIGHT_PATH)

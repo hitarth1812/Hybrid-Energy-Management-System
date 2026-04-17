@@ -18,7 +18,7 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
-from energy.views import LogoutView, me
+from energy.views import LogoutView, me, get_analytics, get_forecast
 from django.conf import settings
 from django.conf.urls.static import static
 
@@ -29,6 +29,10 @@ urlpatterns = [
     path("api/auth/logout/", LogoutView.as_view(), name="token_blacklist"),
     path("api/auth/me/", me, name="auth_me"),
     path("api/", include("energy.urls")),
+    
+    # Root-level analytics and forecast endpoints for frontend compatibility
+    path("analytics/", get_analytics, name="analytics"),
+    path("forecast/", get_forecast, name="forecast"),
 ]
 
 if settings.DEBUG:

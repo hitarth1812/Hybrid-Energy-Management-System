@@ -13,3 +13,4 @@ from .calculator import calculate_carbon
 from .auth import LogoutView, me
 from .predict import predict_power, predict_by_time, predict_light_view
 from .health import health_check  # [H4] deployment health probe
+from .analytics import get_analytics, get_forecast

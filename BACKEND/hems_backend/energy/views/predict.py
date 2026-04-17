@@ -7,7 +7,6 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.throttling import UserRateThrottle, AnonRateThrottle
 
-from ml_models.predictor import predict, predict_light, FEATURES
 from energy.models import PredictionLog
 
 logger = logging.getLogger(__name__)
@@ -25,6 +24,13 @@ HOUR_CURRENT_AVG = {
     14: 53, 15: 50, 16: 49, 17: 46, 18: 42, 19: 39,
     20: 35, 21: 31, 22: 28, 23: 24,
 }
+
+FEATURES = [
+    "current", "VLL", "VLN", "frequency", "power_factor",
+    "hour", "day_of_week", "is_weekend", "month",
+    "power_lag_1", "power_lag_5", "power_lag_10",
+    "rolling_mean_5", "rolling_std_5",
+]
 
 
 class PredictView(APIView):
@@ -44,6 +50,7 @@ class PredictView(APIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
         try:
+            from ml_models.predictor import predict
             result = predict(data)
             if result.get("fallback"):
                 return Response(
@@ -107,6 +114,7 @@ class PredictByTimeView(APIView):
             "rolling_std_5": 2.0,
         }
 
+        from ml_models.predictor import predict
         result = predict(features)
 
         if result.get("fallback"):
@@ -158,6 +166,7 @@ class PredictLightView(APIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
         try:
+            from ml_models.predictor import predict_light
             result = predict_light(data)
             if result.get("fallback"):
                 return Response(
