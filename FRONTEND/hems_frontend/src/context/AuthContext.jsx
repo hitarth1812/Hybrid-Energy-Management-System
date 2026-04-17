@@ -21,6 +21,8 @@ export const AuthProvider = ({ children }) => {
   const login = useCallback(async (username, password) => {
     try {
       setIsLoading(true)
+      console.log('[Login Attempt]', { timestamp: new Date().toISOString(), username })
+      
       const response = await api.post('/api/auth/login/', { username, password })
       const { access, refresh } = response.data
 
@@ -30,9 +32,17 @@ export const AuthProvider = ({ children }) => {
       const meResponse = await api.get('/api/auth/me/')
       setUser(meResponse.data)
       setIsAuthenticated(true)
+      console.log('[Login Success]', { username, timestamp: new Date().toISOString() })
       navigate('/', { replace: true })
       return true
     } catch (error) {
+      console.error('[Login Failed]', {
+        username,
+        errorMessage: error.message,
+        errorStatus: error.response?.status,
+        errorData: error.response?.data,
+        timestamp: new Date().toISOString()
+      })
       setUser(null)
       setIsAuthenticated(false)
       throw error
