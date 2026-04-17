@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
-import { Link, useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import GlassContainer from '../components/GlassContainer'
 import GlowingGlobe from '../components/GlowingGlobe'
 import ArkaLogo from '../assets/arka_logo.png'
@@ -121,15 +121,6 @@ const LoginPage = () => {
               {submitting ? 'Signing In...' : 'Sign In'}
             </motion.button>
           </form>
-
-          <div className="mt-6 text-center">
-            <Link
-              to="#"
-              className="text-sm text-white/60 hover:text-white transition"
-            >
-              Forgot password?
-            </Link>
-          </div>
 
           {/* Admin Credentials - Development Reference */}
           <div className="mt-8 pt-6 border-t border-white/10">
