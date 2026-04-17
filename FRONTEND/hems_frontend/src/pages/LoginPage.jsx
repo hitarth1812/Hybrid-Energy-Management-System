@@ -13,6 +13,7 @@ const LoginPage = () => {
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [submitting, setSubmitting] = useState(false)
+  const [timeoutWarning, setTimeoutWarning] = useState(false)
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -20,16 +21,33 @@ const LoginPage = () => {
     }
   }, [isAuthenticated, navigate])
 
+  // Show timeout warning after 5 seconds
+  useEffect(() => {
+    if (!submitting) {
+      setTimeoutWarning(false)
+      return
+    }
+
+    const timer = setTimeout(() => {
+      setTimeoutWarning(true)
+    }, 5000)
+
+    return () => clearTimeout(timer)
+  }, [submitting])
+
   const handleSubmit = async (event) => {
     event.preventDefault()
     setError('')
+    setTimeoutWarning(false)
     setSubmitting(true)
 
     try {
       await login(username, password)
     } catch (err) {
-      setError('Invalid email or password')
+      const errorMessage = err.response?.data?.detail || err.message || 'Invalid email or password'
+      setError(errorMessage)
       setSubmitting(false)
+      setTimeoutWarning(false)
     }
   }
 
@@ -108,6 +126,12 @@ const LoginPage = () => {
             {error && (
               <div className="rounded-full px-4 py-2 text-sm text-red-100 bg-red-500/20 border border-red-400/30 text-center">
                 {error}
+              </div>
+            )}
+
+            {submitting && timeoutWarning && (
+              <div className="rounded-full px-4 py-2 text-sm text-yellow-100 bg-yellow-500/20 border border-yellow-400/30 text-center animate-pulse">
+                Server is waking up... this may take up to 30 seconds
               </div>
             )}
 
