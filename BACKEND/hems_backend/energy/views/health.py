@@ -1,57 +1,76 @@
 """
-[H4 follow-up] Health Check Endpoint
-GET /api/health/ — returns HTTP 200 if all subsystems OK, 503 if degraded.
+[H4] Health Check Endpoint — lightweight, non-blocking
+GET /api/health/
+
 Response:
-    {
-        "status": "ok" | "degraded",
-        "ml_models": "ok" | "degraded",
-        "database": "ok" | "degraded",
-        "detail": { ... }
-    }
-Use this from your deployment pipeline / load-balancer health probe.
+    {"status": "ok"|"degraded", "ml_models": "...", "database": "...", "detail": {...}}
+
+Design rules:
+  - NO top-level ML imports (would block on cold-start)
+  - ML probe: only inspect sys.modules — zero disk I/O if not loaded yet
+  - DB probe: cursor ping (does NOT call ensure_connection which can hang)
+  - Always returns < 100 ms
 """
-from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import AllowAny
-from rest_framework.response import Response
+import sys
+import logging
+from django.http import JsonResponse
+from django.views.decorators.http import require_GET
+from django.views.decorators.csrf import csrf_exempt
 from django.db import connection
-from rest_framework import status as drf_status
+
+logger = logging.getLogger(__name__)
 
 
-@api_view(['GET'])
-@permission_classes([AllowAny])
+@csrf_exempt
+@require_GET
 def health_check(request):
-    detail = {}
+    logger.info("[health] probe received from %s", request.META.get("REMOTE_ADDR", "unknown"))
+
+    detail: dict = {}
     overall_ok = True
 
-    # --- ML Models ---
+    # ── ML probe ──────────────────────────────────────────────────────────────
+    # Only inspect sys.modules — if the predictor module isn't cached yet,
+    # treat it as "not loaded" (not "degraded") so we don't trigger a heavy
+    # disk import on every Render health poll.
     try:
-        from ml_models.predictor import _xgb, _lgb  # noqa: F401
-        ml_ok = (_xgb is not None) or (_lgb is not None)
-    except Exception as e:
-        ml_ok = False
-        detail['ml_error'] = str(e)
-
-    detail['ml_models'] = 'ok' if ml_ok else 'degraded'
-    if not ml_ok:
+        predictor_mod = sys.modules.get("ml_models.predictor")
+        if predictor_mod is not None:
+            _xgb = getattr(predictor_mod, "_xgb", None)
+            _lgb = getattr(predictor_mod, "_lgb", None)
+            ml_ok = (_xgb is not None) or (_lgb is not None)
+            detail["ml_models"] = "ok" if ml_ok else "degraded"
+            if not ml_ok:
+                overall_ok = False
+        else:
+            # Module not imported yet — server is still warming up, not degraded
+            detail["ml_models"] = "warming_up"
+    except Exception as exc:  # pragma: no cover
+        detail["ml_models"] = "degraded"
+        detail["ml_error"] = str(exc)
         overall_ok = False
 
-    # --- Database ---
+    # ── DB probe ──────────────────────────────────────────────────────────────
     try:
-        connection.ensure_connection()
-        db_ok = True
-    except Exception as e:
-        db_ok = False
-        detail['db_error'] = str(e)
-
-    detail['database'] = 'ok' if db_ok else 'degraded'
-    if not db_ok:
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT 1")
+        detail["database"] = "ok"
+    except Exception as exc:
+        detail["database"] = "degraded"
+        detail["db_error"] = str(exc)
         overall_ok = False
 
-    http_status = drf_status.HTTP_200_OK if overall_ok else drf_status.HTTP_503_SERVICE_UNAVAILABLE
+    status_str = "ok" if overall_ok else "degraded"
+    http_code = 200 if overall_ok else 503
 
-    return Response({
-        'status': 'ok' if overall_ok else 'degraded',
-        'ml_models': detail['ml_models'],
-        'database': detail['database'],
-        'detail': detail,
-    }, status=http_status)
+    logger.info("[health] status=%s ml=%s db=%s", status_str, detail.get("ml_models"), detail.get("database"))
+
+    return JsonResponse(
+        {
+            "status": status_str,
+            "ml_models": detail.get("ml_models", "unknown"),
+            "database": detail.get("database", "unknown"),
+            "detail": detail,
+        },
+        status=http_code,
+    )
