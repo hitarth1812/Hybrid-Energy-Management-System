@@ -4,7 +4,7 @@ services:
     env: python
     pythonVersion: '3.12'
     buildCommand: "bash BACKEND/hems_backend/render-build.sh"
-    startCommand: "python -m gunicorn --chdir BACKEND/hems_backend hems_backend.wsgi:application --bind 0.0.0.0:$PORT --workers 2"
+    startCommand: "python -m gunicorn --chdir BACKEND/hems_backend hems_backend.wsgi:application --bind 0.0.0.0:$PORT --workers 2 --timeout 120"
     envVars:
       - key: PYTHONPATH
         value: /opt/render/project/src/BACKEND/hems_backend
