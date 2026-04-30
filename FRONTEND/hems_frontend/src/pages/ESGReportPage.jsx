@@ -73,7 +73,7 @@ const ESGReportPage = () => {
         fetchReports(); // Trigger an instant background refresh displaying the new 'pending' item
 
         // Send token securely across raw EventSource
-        const token = localStorage.getItem('access');
+        const token = localStorage.getItem('access_token');
         const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
         const url = `${baseUrl}/api/carbon/esg-report/stream/${reportId}/?token=${token}`;
 
@@ -371,7 +371,7 @@ const ESGReportPage = () => {
                                                 {r.download_url && r.status === 'done' ? (
                                                     <div className="relative group inline-block">
                                                         <a
-                                                            href={`http://127.0.0.1:8000${r.download_url}`}
+                                                            href={`${import.meta.env.VITE_API_URL || 'http://localhost:8000'}${r.download_url}`}
                                                             target="_blank"
                                                             rel="noopener noreferrer"
                                                             className={cn("inline-flex items-center gap-2 px-4 py-1.5 text-xs font-bold uppercase tracking-wide rounded-lg transition-colors cursor-pointer", r.low_confidence_warning ? "bg-amber-100 dark:bg-amber-900/50 text-amber-800 dark:text-amber-400 hover:bg-amber-200 dark:hover:bg-amber-900/70" : "bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 text-slate-800 dark:text-white")}

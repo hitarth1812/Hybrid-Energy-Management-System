@@ -12,10 +12,10 @@ const AnomalyItem = ({ anomaly }) => {
     };
 
     return (
-        <div className="p-3 bg-surface-base border border-surface-border rounded-lg mb-2 relative overflow-hidden group">
+        <div className="p-3 bg-white dark:bg-surface-base border border-gray-300 dark:border-surface-border rounded-lg mb-2 relative overflow-hidden group">
             <div className="absolute left-0 top-0 bottom-0 w-1 bg-red-500/20 group-hover:bg-red-500/50 transition-colors"></div>
             <div className="flex justify-between items-start mb-1">
-                <span className="text-[10px] text-zinc-500 font-mono">{format(new Date(anomaly.timestamp), 'dd MMM HH:mm')}</span>
+                <span className="text-[10px] text-gray-500 dark:text-zinc-500 font-mono">{format(new Date(anomaly.timestamp), 'dd MMM HH:mm')}</span>
                 <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-surface-elevated border border-surface-border text-red-400">
                     {anomaly.magnitude}
                 </span>
@@ -29,13 +29,13 @@ const AnomalyItem = ({ anomaly }) => {
 };
 
 const AnomalyAlerts = ({ anomalies, isLoading }) => {
-    if (isLoading) return <div className="h-[320px] bg-surface-card animate-pulse rounded-2xl border border-surface-border"></div>;
+    if (isLoading) return <div className="h-[320px] bg-gray-200 dark:bg-surface-card animate-pulse rounded-2xl border border-gray-300 dark:border-surface-border"></div>;
 
     const hasAnomalies = anomalies && anomalies.length > 0;
 
     return (
-        <div className="bg-surface-card border border-surface-border p-5 rounded-2xl h-[320px] flex flex-col shadow-lg">
-            <h3 className="text-sm font-bold tracking-wide uppercase text-zinc-200 mb-4 flex items-center gap-2">
+        <div className="bg-white/70 dark:bg-surface-card border border-gray-300 dark:border-surface-border p-5 rounded-2xl h-[320px] flex flex-col shadow-lg">
+            <h3 className="text-sm font-bold tracking-wide uppercase text-gray-700 dark:text-zinc-200 mb-4 flex items-center gap-2">
                 <AlertTriangle className="w-4 h-4 text-red-500" /> Detected Anomalies
             </h3>
             
@@ -47,7 +47,7 @@ const AnomalyAlerts = ({ anomalies, isLoading }) => {
                         <div className="w-12 h-12 rounded-full bg-green-500/10 flex items-center justify-center mb-3">
                             <span className="text-xl">✅</span>
                         </div>
-                        <p className="text-sm text-zinc-400">No anomalies detected in selected period</p>
+                        <p className="text-sm text-gray-600 dark:text-zinc-400">No anomalies detected in selected period</p>
                     </div>
                 )}
             </div>

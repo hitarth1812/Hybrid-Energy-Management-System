@@ -21,8 +21,8 @@ const EnergyUsage = () => {
                 title="Energy Monitor" 
                 subtitle="Live load parameters, ML predictions, and operational safety alerts."
                 rightElement={
-                    <div className="bg-brand/10 text-brand px-3 py-1.5 rounded-full text-xs font-bold uppercase tracking-widest flex items-center gap-2">
-                        <span className="w-2 h-2 rounded-full bg-brand animate-pulse"></span>
+                    <div className="bg-emerald-500/20 dark:bg-brand/10 text-emerald-700 dark:text-brand px-3 py-1.5 rounded-full text-xs font-bold uppercase tracking-widest flex items-center gap-2">
+                        <span className="w-2 h-2 rounded-full bg-emerald-600 dark:bg-brand animate-pulse"></span>
                         Live Connection
                     </div>
                 }
@@ -46,15 +46,15 @@ const EnergyUsage = () => {
                     <PredictionResultCards result={result} />
                     
                     {/* Render Mini chart inside a nice glass card */}
-                    <div className="bg-surface-card border border-surface-border rounded-2xl p-5 shadow-lg">
+                    <div className="bg-white/70 dark:bg-surface-card border border-gray-300 dark:border-surface-border rounded-2xl p-5 shadow-lg">
                         <div className="flex items-center justify-between mb-2">
-                            <h3 className="text-sm tracking-wide text-zinc-400 font-bold uppercase flex items-center gap-2">
-                                <Zap className="w-4 h-4 text-brand" /> Prediction History
+                            <h3 className="text-sm tracking-wide text-gray-700 dark:text-zinc-400 font-bold uppercase flex items-center gap-2">
+                                <Zap className="w-4 h-4 text-emerald-600 dark:text-brand" /> Prediction History
                             </h3>
                             {predictionHistory.length > 0 && (
                                 <button 
                                     onClick={clearHistory}
-                                    className="p-1.5 text-zinc-500 hover:text-red-400 hover:bg-red-400/10 rounded-md transition-colors"
+                                    className="p-1.5 text-gray-500 dark:text-zinc-500 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-100 dark:hover:bg-red-400/10 rounded-md transition-colors"
                                     title="Clear all predictions"
                                 >
                                     <Trash2 className="w-4 h-4" />

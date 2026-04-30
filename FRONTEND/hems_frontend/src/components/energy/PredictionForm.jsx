@@ -7,7 +7,7 @@ const InputField = ({ label, name, value, onChange, placeholder, min, max, unit 
     
     return (
         <div className="space-y-1">
-            <label className="text-xs font-sans uppercase tracking-widest text-zinc-400">{label}</label>
+            <label className="text-xs font-sans uppercase tracking-widest text-gray-600 dark:text-zinc-400">{label}</label>
             <div className="relative">
                 <input 
                     type="number" 
@@ -15,9 +15,9 @@ const InputField = ({ label, name, value, onChange, placeholder, min, max, unit 
                     value={value}
                     onChange={onChange}
                     placeholder={placeholder}
-                    className={`w-full bg-surface-base border ${isInvalid ? 'border-red-500' : 'border-surface-border'} text-white placeholder-zinc-600 rounded-lg py-2.5 pl-3 pr-10 focus:outline-none focus:ring-1 ${isInvalid ? 'focus:ring-red-500' : 'focus:ring-brand-light'} font-mono text-sm transition-shadow`}
+                    className={`w-full bg-white dark:bg-surface-base border ${isInvalid ? 'border-red-500' : 'border-gray-300 dark:border-surface-border'} text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-zinc-600 rounded-lg py-2.5 pl-3 pr-10 focus:outline-none focus:ring-1 ${isInvalid ? 'focus:ring-red-500' : 'focus:ring-brand-light dark:focus:ring-brand-light'} font-mono text-sm transition-shadow`}
                 />
-                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 font-mono text-xs">{unit}</span>
+                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 dark:text-zinc-500 font-mono text-xs">{unit}</span>
             </div>
             {isInvalid && <p className="text-[10px] text-red-500 mt-1">Valid range: {min} - {max}</p>}
         </div>
@@ -55,7 +55,7 @@ const PredictionForm = ({ onSubmit, isLoading }) => {
                 </div>
             )}
 
-            <form onSubmit={handleSubmit} className="bg-surface-card border border-surface-border p-6 rounded-2xl shadow-lg space-y-6">
+            <form onSubmit={handleSubmit} className="bg-white/80 dark:bg-surface-card border border-gray-300 dark:border-surface-border p-6 rounded-2xl shadow-lg space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <InputField label="Active Power" name="power" value={formData.power} onChange={handleChange} placeholder="e.g. 45" min={0} max={100} unit="kW" />
                     <InputField label="Power Factor" name="power_factor" value={formData.power_factor} onChange={handleChange} placeholder="e.g. 0.95" min={0} max={1} unit="PF" />
@@ -68,7 +68,7 @@ const PredictionForm = ({ onSubmit, isLoading }) => {
                 <button 
                     type="submit" 
                     disabled={!isFormValid || isLoading}
-                    className={`w-full py-3 rounded-xl font-bold tracking-wide transition-all ${!isFormValid ? 'bg-surface-elevated text-zinc-500 cursor-not-allowed' : 'bg-gradient-to-r from-brand-dark to-brand hover:from-brand hover:to-brand-light text-white shadow-[0_0_15px_rgba(16,185,129,0.2)] hover:shadow-[0_0_25px_rgba(16,185,129,0.4)] hover:-translate-y-0.5'}`}
+                    className={`w-full py-3 rounded-xl font-bold tracking-wide transition-all ${!isFormValid ? 'bg-gray-200 dark:bg-surface-elevated text-gray-500 dark:text-zinc-500 cursor-not-allowed' : 'bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white shadow-[0_0_15px_rgba(16,185,129,0.2)] hover:shadow-[0_0_25px_rgba(16,185,129,0.4)] hover:-translate-y-0.5'}`}
                 >
                     {isLoading ? (
                         <span className="flex items-center justify-center gap-2">

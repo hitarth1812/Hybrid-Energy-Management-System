@@ -4,8 +4,8 @@ import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'rec
 const CustomTooltip = ({ active, payload, label }) => {
     if (active && payload && payload.length) {
         return (
-            <div className="bg-surface-card border border-surface-border p-3 rounded shadow-xl font-sans text-sm">
-                <p className="text-zinc-400 mb-1">{label}</p>
+            <div className="bg-white dark:bg-surface-card border border-gray-300 dark:border-surface-border p-3 rounded shadow-xl font-sans text-sm">
+                <p className="text-gray-700 dark:text-zinc-400 mb-1">{label}</p>
                 <p className="text-white font-mono">
                     <span className="text-teal-400 font-bold">{payload[0].value.toFixed(1)}</span> kg CO₂
                 </p>

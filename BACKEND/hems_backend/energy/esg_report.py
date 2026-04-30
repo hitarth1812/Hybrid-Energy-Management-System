@@ -370,7 +370,7 @@ def generate_esg_report(user) -> BytesIO:
     # Page 1 Cover
     stamp = timezone.localtime().strftime("%d %b %Y, %H:%M IST")
     story.append(Paragraph("ESG Energy Report - Arka Energy Nexus", title_style))
-    story.append(Paragraph("Auto-generated · All Buildings · All Devices", subtitle_style))
+    story.append(Paragraph("Auto-generated - All Buildings - All Devices", subtitle_style))
     story.append(Spacer(1, 16))
     story.append(Paragraph(f"Date: {stamp}", normal))
     story.append(Paragraph(f"Organisation: {_org_name(user)}", normal))

@@ -142,7 +142,7 @@ const UsageLogForm = () => {
                 <motion.form
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
-                    className="space-y-6 bg-white/60 dark:bg-slate-800/50 p-6 rounded-2xl border border-slate-200 dark:border-slate-700/50 backdrop-blur-xl shadow-lg"
+                    className="space-y-6 bg-white/90 dark:bg-slate-800/50 p-6 rounded-2xl border border-slate-300 dark:border-slate-700/50 backdrop-blur-xl shadow-lg"
                     onSubmit={handleSubmit}
                 >
                     {/* Building Selection */}
@@ -300,7 +300,7 @@ const UsageLogForm = () => {
                     initial={{ opacity: 0, x: 20 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: 0.2 }}
-                    className="bg-white/60 dark:bg-slate-800/50 p-6 rounded-2xl border border-slate-200 dark:border-slate-700/50 backdrop-blur-xl shadow-lg h-full"
+                    className="bg-white/90 dark:bg-slate-800/50 p-6 rounded-2xl border border-slate-300 dark:border-slate-700/50 backdrop-blur-xl shadow-lg h-full"
                 >
                     <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
                         <Zap className="w-5 h-5 text-yellow-500" /> Impact Preview

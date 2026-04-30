@@ -17,8 +17,8 @@ const formatTick = (val) => {
 const CustomTooltip = ({ active, payload, label }) => {
     if (active && payload && payload.length) {
         return (
-            <div className="bg-surface-card border border-surface-border p-3 rounded shadow-xl font-sans text-sm">
-                <p className="text-zinc-400 mb-1">{formatTick(label)}</p>
+            <div className="bg-white dark:bg-surface-card border border-gray-300 dark:border-surface-border p-3 rounded shadow-xl font-sans text-sm">
+                <p className="text-gray-700 dark:text-zinc-400 mb-1">{formatTick(label)}</p>
                 <p className="text-white font-mono">
                     <span className="text-brand-light font-bold">{(payload[0].value ?? 0).toFixed(1)}</span> kWh
                 </p>

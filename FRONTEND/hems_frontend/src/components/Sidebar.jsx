@@ -27,9 +27,9 @@ const Sidebar = ({ isDarkMode, toggleTheme, onContactClick }) => {
     return (
         <div className={cn(
             "h-full flex flex-col justify-between p-4 w-72 transition-all duration-500",
-            // Light Mode: Crystal White Glass | Dark Mode: Deep Void Glass
-            "bg-white/60 dark:bg-black/20 backdrop-blur-2xl shadow-xl",
-            "border-r border-white/40 dark:border-white/5"
+            // Light Mode: Improved contrast | Dark Mode: Deep Void Glass
+            "bg-white/70 dark:bg-black/20 backdrop-blur-2xl shadow-xl",
+            "border-r border-gray-300/50 dark:border-white/5"
         )}>
 
             {/* Branding */}
@@ -101,9 +101,9 @@ const Sidebar = ({ isDarkMode, toggleTheme, onContactClick }) => {
                             "flex items-center gap-3 px-4 py-3.5 rounded-xl transition-all duration-300 group relative overflow-hidden shrink-0",
                             isActive
                                 // Active State: Light (Green/White gradient), Dark (Green Glow)
-                                ? "bg-gradient-to-r from-green-100/80 to-emerald-100/50 dark:from-green-500/20 dark:to-emerald-500/10 text-green-700 dark:text-green-400 shadow-sm border border-green-200 dark:border-green-500/20"
+                                ? "bg-gradient-to-r from-green-500/30 to-emerald-500/20 dark:from-green-500/20 dark:to-emerald-500/10 text-green-700 dark:text-green-400 shadow-sm border border-green-400/40 dark:border-green-500/20"
                                 // Inactive State
-                                : "text-slate-600 dark:text-white/60 hover:text-slate-900 dark:hover:text-white hover:bg-white/40 dark:hover:bg-white/5 hover:border-white/40 dark:hover:border-white/5 border border-transparent hover:scale-105"
+                                : "text-slate-700 dark:text-white/60 hover:text-slate-900 dark:hover:text-white hover:bg-green-100/40 dark:hover:bg-white/5 hover:border-green-300/40 dark:hover:border-white/5 border border-transparent hover:scale-105"
                         )}
                     >
                         {({ isActive }) => (
@@ -124,13 +124,13 @@ const Sidebar = ({ isDarkMode, toggleTheme, onContactClick }) => {
             <div className="space-y-4 mb-2">
                 {/* Contact */}
                 <div className="space-y-2 pt-4 border-t border-slate-200/50 dark:border-white/5">
-                    <button onClick={onContactClick} className="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-slate-600 dark:text-white/60 hover:text-slate-900 dark:hover:text-white hover:bg-white/40 dark:hover:bg-white/5 transition-all text-sm font-semibold hover:pl-5 hover:shadow-sm">
+                    <button onClick={onContactClick} className="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-slate-700 dark:text-white/60 hover:text-slate-900 dark:hover:text-white hover:bg-green-100/40 dark:hover:bg-white/5 transition-all text-sm font-semibold hover:pl-5 hover:shadow-sm">
                         <HelpCircle className="w-4 h-4" /> Contact Us
                     </button>
                 </div>
 
                 {/* Theme Toggle & University Logo */}
-                <div className="flex items-center justify-between px-3 py-3 bg-white/40 dark:bg-black/20 rounded-2xl border border-white/60 dark:border-white/5 backdrop-blur-xl shadow-lg">
+                <div className="flex items-center justify-between px-3 py-3 bg-white/80 dark:bg-black/20 rounded-2xl border border-gray-300/50 dark:border-white/5 backdrop-blur-xl shadow-lg">
                     <div className="flex items-center gap-3">
                         {/* CHARUSAT Logo - Badge Style */}
                         <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-white dark:border-white/10 shadow-md bg-white shrink-0 flex items-center justify-center p-0.5">
@@ -150,7 +150,7 @@ const Sidebar = ({ isDarkMode, toggleTheme, onContactClick }) => {
 
                     <button
                         onClick={toggleTheme}
-                        className="w-9 h-9 rounded-xl bg-white/80 dark:bg-white/5 hover:bg-white dark:hover:bg-white/10 border border-white/50 dark:border-white/10 flex items-center justify-center text-slate-700 dark:text-white/80 transition-all hover:rotate-12 hover:scale-110 shadow-sm active:scale-95"
+                        className="w-9 h-9 rounded-xl bg-gray-100 dark:bg-white/5 hover:bg-gray-200 dark:hover:bg-white/10 border border-gray-400/50 dark:border-white/10 flex items-center justify-center text-slate-700 dark:text-white/80 transition-all hover:rotate-12 hover:scale-110 shadow-sm active:scale-95"
                     >
                         {isDarkMode ? <Sun className="w-5 h-5 text-yellow-500 drop-shadow-lg" /> : <Moon className="w-5 h-5 text-indigo-600" />}
                     </button>

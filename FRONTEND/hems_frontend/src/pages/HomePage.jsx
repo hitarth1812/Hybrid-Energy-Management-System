@@ -44,19 +44,23 @@ const HomePage = () => {
 
                 </motion.div>
 
-                {/* 3D Visuals Area */}
-                <div className="relative h-[600px] w-full flex items-center justify-center perspective-1000">
-                    {/* Globe Layer */}
-                    <motion.div
-                        initial={{ opacity: 0, scale: 0.8 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        transition={{ duration: 1, delay: 0.2 }}
-                        className="absolute inset-0 flex items-center justify-center z-0"
-                    >
-                        <GlowingGlobe className="opacity-80 mix-blend-multiply dark:mix-blend-plus-lighter" />
-                    </motion.div>
+                {/* 3D Visuals Area — clean layered structure with proper overflow and sizing */}
+                <div
+                    className="relative w-full max-w-[700px] mx-auto overflow-visible"
+                    style={{ height: 750 }}
+                >
+                    {/* Globe Layer — centered absolute positioning */}
+                    <div className="absolute inset-0 flex items-center justify-center z-0">
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.8 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            transition={{ duration: 1, delay: 0.2 }}
+                        >
+                            <GlowingGlobe globeSize={650} className="opacity-90 dark:mix-blend-plus-lighter" />
+                        </motion.div>
+                    </div>
 
-                    {/* Floating Cards Layer (Interactive) */}
+                    {/* Floating Cards Layer (Interactive) — absolute on top of the globe */}
                     <div className="absolute inset-0 z-10 pointer-events-none">
                         {/* Card 1: Top Right - Energy */}
                         <motion.div
@@ -152,7 +156,7 @@ const HomePage = () => {
                                     { label: 'DB_SYNC', icon: Database }
                                 ]
                             })}
-                            className="absolute top-1/2 right-[-20px] w-40 opacity-80 pointer-events-auto cursor-pointer"
+                            className="absolute top-1/2 right-4 w-40 opacity-80 pointer-events-auto cursor-pointer"
                             animate={prefersReducedMotion ? {} : { x: [0, 10, 16, 10, 0], y: [0, -4, 0, 4, 0] }}
                             transition={prefersReducedMotion ? {} : { duration: 9, repeat: Infinity, ease: 'easeInOut' }}
                         >

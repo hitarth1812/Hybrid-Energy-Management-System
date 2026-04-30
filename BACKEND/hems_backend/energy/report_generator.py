@@ -53,7 +53,7 @@ def generate_power_prediction_report(prediction_data: dict, model_type: str = "p
     # PAGE 1: Cover
     # -------------------------------------------------------------------------
     story.append(Spacer(1, 150))
-    story.append(Paragraph("Power Prediction Report � Arka Energy Nexus", title_style))
+    story.append(Paragraph("Power Prediction Report - ARKA Energy Nexus", title_style))
     story.append(Paragraph("Power Model" if model_type == "power" else "Light/Appliance Model", subtitle_style))
     story.append(Spacer(1, 50))
     story.append(Paragraph(f"Generated: {date_str}", ParagraphStyle(name='Centered', parent=styles['Normal'], alignment=1)))
@@ -137,7 +137,7 @@ def generate_power_prediction_report(prediction_data: dict, model_type: str = "p
             mean_val = sum(scores)/max(1, len(scores))
             ax.axhline(mean_val, color='red', linestyle='--', label='Mean')
         if i == 0:
-            ax.set_ylabel("R� Score")
+            ax.set_ylabel("R^2 Score")
             ax.legend()
     
     plt.tight_layout()

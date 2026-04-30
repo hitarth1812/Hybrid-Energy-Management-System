@@ -6,8 +6,8 @@ const CustomTooltip = ({ active, payload, label }) => {
     if (active && payload && payload.length) {
         const isPeak = payload[0].payload.is_peak;
         return (
-            <div className="bg-surface-card border border-surface-border p-3 rounded shadow-xl font-sans text-sm">
-                <p className="text-zinc-400 mb-2">{format(new Date(label), 'PPp')}</p>
+            <div className="bg-white dark:bg-surface-card border border-gray-300 dark:border-surface-border p-3 rounded shadow-xl font-sans text-sm">
+                <p className="text-gray-700 dark:text-zinc-400 mb-2">{format(new Date(label), 'PPp')}</p>
                 {payload[0].value !== null && (
                     <p className="text-white">Actual: <span className="font-mono font-bold">{payload[0].value} kWh</span></p>
                 )}

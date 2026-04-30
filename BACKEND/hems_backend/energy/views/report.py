@@ -156,22 +156,44 @@ def esg_report(request):
                 }
             )
 
-        # --- FIX 5: REMOVE DAEMON THREAD FALLBACK ---
+        # --- Try Celery first; fall back to a sync thread if broker is down ---
         try:
             from energy.tasks import generate_esg_pdf
             task_result = generate_esg_pdf.delay(report.id, request.user.email)
             report.celery_task_id = task_result.id
             report.save(update_fields=['celery_task_id'])
         except Exception as celery_err:
-            report.status = 'error'
-            report.error_message = f"Celery broker unavailable: {str(celery_err)}"
-            report.save(update_fields=['status', 'error_message'])
-            return Response({"error": "Service Unavailable. Task broker down."}, status=503)
+            logger.warning(
+                "Celery unavailable (%s). Falling back to inline thread for report %s.",
+                celery_err, report.id
+            )
+            # Inline thread fallback — no Celery/Redis required
+            import threading
+
+            def _run_sync(report_id, user_email):
+                try:
+                    from energy.tasks import generate_esg_pdf
+                    # .apply() runs the task synchronously with proper bind=True handling
+                    generate_esg_pdf.apply(args=[report_id, user_email])
+                except Exception as e:
+                    from energy.models import ESGReport as _ESGReport
+                    try:
+                        r = _ESGReport.objects.get(pk=report_id)
+                        r.status = 'error'
+                        r.error_message = str(e)
+                        r.save(update_fields=['status', 'error_message'])
+                    except Exception:
+                        pass
+                    logger.exception("Inline ESG thread failed for report %s: %s", report_id, e)
+
+            t = threading.Thread(target=_run_sync, args=(report.id, request.user.email), daemon=True)
+            t.start()
 
         return Response({
             "status": "queued",
             "report_id": report.id,
         })
+
 
 
 @api_view(['GET'])

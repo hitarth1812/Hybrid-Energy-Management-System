@@ -3,19 +3,19 @@ import { Zap, Activity, IndianRupee, Leaf } from 'lucide-react';
 import { formatCurrency, formatNumber } from '../../utils/formatters';
 
 const ResultCard = ({ title, value, icon: Icon, color, delayClass }) => (
-    <div className={`bg-surface-card border border-surface-border p-4 rounded-2xl flex flex-col items-center justify-center text-center fade-in-up ${delayClass} shadow-lg`}>
+    <div className={`bg-white/60 dark:bg-surface-card border border-gray-300 dark:border-surface-border p-4 rounded-2xl flex flex-col items-center justify-center text-center fade-in-up ${delayClass} shadow-lg`}>
         <div className={`w-10 h-10 rounded-full flex items-center justify-center mb-3 ${color.bg} ${color.text}`}>
             <Icon className="w-5 h-5" />
         </div>
-        <span className="text-xs font-sans uppercase tracking-widest text-zinc-400 mb-1">{title}</span>
-        <span className="font-mono text-2xl font-bold text-white tracking-tight">{value}</span>
+        <span className="text-xs font-sans uppercase tracking-widest text-gray-600 dark:text-zinc-400 mb-1">{title}</span>
+        <span className="font-mono text-2xl font-bold text-gray-900 dark:text-white tracking-tight">{value}</span>
     </div>
 );
 
 const PredictionResultCards = ({ result }) => {
     if (!result) {
         return (
-            <div className="h-full min-h-[300px] w-full border border-dashed border-surface-border rounded-2xl flex flex-col items-center justify-center text-zinc-500 p-6 text-center">
+            <div className="h-full min-h-[300px] w-full border border-dashed border-gray-300 dark:border-surface-border rounded-2xl flex flex-col items-center justify-center text-gray-500 dark:text-zinc-500 p-6 text-center bg-gray-50 dark:bg-transparent">
                 <Zap className="w-8 h-8 mb-4 opacity-20" />
                 <p className="font-sans text-sm">Enter parameters and run prediction to view ML forecast results.</p>
             </div>

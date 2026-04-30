@@ -46,26 +46,26 @@ const TimeForecast = () => {
 
   return (
     <div className="max-w-4xl mx-auto py-10 space-y-8">
-      <GlassContainer className="p-8">
+      <GlassContainer className="p-8 bg-white/80 dark:bg-black/40 border border-gray-300 dark:border-white/10">
         <div className="flex items-center gap-3 mb-6">
           <div className="w-10 h-10 rounded-xl bg-emerald-500/20 flex items-center justify-center">
             <Clock className="w-5 h-5 text-emerald-400" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold text-white">Time Forecast</h1>
-            <p className="text-sm text-white/60">Predict power usage for a specific date and time.</p>
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Time Forecast</h1>
+            <p className="text-sm text-gray-600 dark:text-white/60">Predict power usage for a specific date and time.</p>
           </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-[1fr_auto] gap-4 items-end">
           <div className="space-y-2">
-            <Label htmlFor="forecast_datetime" className="text-white/80">Date &amp; Time</Label>
+            <Label htmlFor="forecast_datetime" className="text-gray-700 dark:text-white/80">Date &amp; Time</Label>
             <Input
               id="forecast_datetime"
               type="datetime-local"
               value={dateTime}
               onChange={(e) => setDateTime(e.target.value)}
-              className="bg-white/10 border-white/10 text-white"
+              className="bg-white dark:bg-white/10 border-gray-300 dark:border-white/10 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
             />
           </div>
           <Button onClick={handlePredict} disabled={loading} className="bg-emerald-500 hover:bg-emerald-600 text-white">
@@ -74,39 +74,39 @@ const TimeForecast = () => {
         </div>
 
         {error && (
-          <div className="mt-4 rounded-lg border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-200">
+          <div className="mt-4 rounded-lg border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-600 dark:text-red-200">
             {error}
           </div>
         )}
 
         {result && (
           <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="rounded-xl border border-white/10 bg-white/5 p-4">
-              <div className="text-xs text-white/50">Predicted Power</div>
-              <div className="text-2xl font-semibold text-white">⚡ {result.predicted_power_kw} kW</div>
+            <div className="rounded-xl border border-gray-300 dark:border-white/10 bg-gray-50 dark:bg-white/5 p-4">
+              <div className="text-xs text-gray-600 dark:text-white/50">Predicted Power</div>
+              <div className="text-2xl font-semibold text-gray-900 dark:text-white">⚡ {result.predicted_power_kw} kW</div>
               {result.p10_kw && result.p90_kw && (
-                <div className="text-xs text-white/40 mt-1">
+                <div className="text-xs text-gray-500 dark:text-white/40 mt-1">
                   Interval: {result.p10_kw} kW - {result.p90_kw} kW
                 </div>
               )}
             </div>
-            <div className="rounded-xl border border-white/10 bg-white/5 p-4">
-              <div className="text-xs text-white/50">Predicted CO2</div>
-              <div className="text-2xl font-semibold text-white">🌿 {result.predicted_co2_kg} kg</div>
+            <div className="rounded-xl border border-gray-300 dark:border-white/10 bg-gray-50 dark:bg-white/5 p-4">
+              <div className="text-xs text-gray-600 dark:text-white/50">Predicted CO2</div>
+              <div className="text-2xl font-semibold text-gray-900 dark:text-white">🌿 {result.predicted_co2_kg} kg</div>
             </div>
-            <div className="rounded-xl border border-white/10 bg-white/5 p-4">
-              <div className="text-xs text-white/50">Day Type</div>
-              <div className="text-xl font-semibold text-white">📅 {result.day_type}</div>
+            <div className="rounded-xl border border-gray-300 dark:border-white/10 bg-gray-50 dark:bg-white/5 p-4">
+              <div className="text-xs text-gray-600 dark:text-white/50">Day Type</div>
+              <div className="text-xl font-semibold text-gray-900 dark:text-white">📅 {result.day_type}</div>
             </div>
-            <div className="rounded-xl border border-white/10 bg-white/5 p-4">
-              <div className="text-xs text-white/50">Load Level</div>
-              <div className="text-xl font-semibold text-white">📊 {result.load_level}</div>
+            <div className="rounded-xl border border-gray-300 dark:border-white/10 bg-gray-50 dark:bg-white/5 p-4">
+              <div className="text-xs text-gray-600 dark:text-white/50">Load Level</div>
+              <div className="text-xl font-semibold text-gray-900 dark:text-white">📊 {result.load_level}</div>
             </div>
-            <div className="rounded-xl border border-white/10 bg-white/5 p-4 md:col-span-2">
-              <div className="text-xs text-white/50">Confidence</div>
-              <div className="text-xl font-semibold text-white">
+            <div className="rounded-xl border border-gray-300 dark:border-white/10 bg-gray-50 dark:bg-white/5 p-4 md:col-span-2">
+              <div className="text-xs text-gray-600 dark:text-white/50">Confidence</div>
+              <div className="text-xl font-semibold text-gray-900 dark:text-white">
                 🎯 {result.confidence} 
-                <span className="text-sm font-normal text-white/50 ml-2">
+                <span className="text-sm font-normal text-gray-500 dark:text-white/50 ml-2">
                   (Spread: {result.interval_width} kW)
                 </span>
               </div>
