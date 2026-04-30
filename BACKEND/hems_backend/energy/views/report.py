@@ -15,6 +15,7 @@ from django.views.decorators.csrf import requires_csrf_token
 
 import random
 from datetime import datetime, timedelta
+from django.utils import timezone
 from ..report_generator import generate_power_prediction_report
 from ..esg_report import generate_esg_report
 
@@ -250,7 +251,31 @@ def download_power_report(request):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def download_esg_report(request):
-    buf = generate_esg_report(request.user)
+    date_from_str = request.GET.get('date_from')
+    date_to_str = request.GET.get('date_to')
+    granularity = (request.GET.get('granularity') or 'day').lower()
+
+    if granularity not in {'day', 'month', 'year'}:
+        granularity = 'day'
+
+    date_from = None
+    date_to = None
+    if date_from_str:
+        try:
+            date_from = datetime.strptime(date_from_str, '%Y-%m-%d')
+        except ValueError:
+            return Response({"error": "Invalid date_from format. Use YYYY-MM-DD."}, status=400)
+    if date_to_str:
+        try:
+            date_to = datetime.strptime(date_to_str, '%Y-%m-%d')
+        except ValueError:
+            return Response({"error": "Invalid date_to format. Use YYYY-MM-DD."}, status=400)
+
+    if not date_from and not date_to:
+        date_to = timezone.localdate()
+        date_from = date_to - timedelta(days=29)
+
+    buf = generate_esg_report(request.user, date_from=date_from, date_to=date_to, granularity=granularity)
     filename = f"esg_report_{datetime.now().strftime('%Y%m%d_%H%M')}.pdf"
     return FileResponse(
         buf,

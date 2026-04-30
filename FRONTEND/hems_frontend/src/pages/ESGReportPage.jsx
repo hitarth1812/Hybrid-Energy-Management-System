@@ -8,9 +8,14 @@ const ESGReportPage = () => {
     const [selectedBuilding, setSelectedBuilding] = useState('');
     const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
     const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1);
+    const today = new Date();
+    const [dateTo, setDateTo] = useState(format(today, 'yyyy-MM-dd'));
+    const [dateFrom, setDateFrom] = useState(format(new Date(today.getTime() - 29 * 24 * 60 * 60 * 1000), 'yyyy-MM-dd'));
+    const [granularity, setGranularity] = useState('day');
 
     const [buildings, setBuildings] = useState([]);
     const [reports, setReports] = useState([]);
+    const [isInstantDownloading, setIsInstantDownloading] = useState(false);
 
     // --- FIX 12: FULL UX STATE MACHINE ---
     // idle -> submitting -> pending -> processing -> done/error/timeout
@@ -64,6 +69,32 @@ const ESGReportPage = () => {
             } else {
                 setErrorMessage('Failed to queue report up on server.');
             }
+        }
+    };
+
+    const downloadInstantReport = async () => {
+        setIsInstantDownloading(true);
+        try {
+            const res = await api.get('/api/energy/esg-report/', {
+                params: {
+                    date_from: dateFrom,
+                    date_to: dateTo,
+                    granularity,
+                },
+                responseType: 'blob',
+            });
+            const url = URL.createObjectURL(new Blob([res.data], { type: 'application/pdf' }));
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `ESG_Report_${dateFrom}_${dateTo}_${granularity}.pdf`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+        } catch (err) {
+            console.error('Failed to download ESG report:', err);
+        } finally {
+            setIsInstantDownloading(false);
         }
     };
 
@@ -174,7 +205,7 @@ const ESGReportPage = () => {
                     <Download className="w-5 h-5 text-blue-500 dark:text-blue-400" /> Run New Extraction
                 </h3>
 
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end transition-all">
+                <div className="grid grid-cols-1 md:grid-cols-6 gap-4 items-end transition-all">
                     {/* Building Select Element */}
                     <div className="space-y-2">
                         <label className="text-slate-700 dark:text-slate-400 text-sm font-medium">Target Building</label>
@@ -227,6 +258,42 @@ const ESGReportPage = () => {
                         </select>
                     </div>
 
+                    {/* Date From */}
+                    <div className="space-y-2">
+                        <label className="text-slate-700 dark:text-slate-400 text-sm font-medium">Date From</label>
+                        <input
+                            type="date"
+                            value={dateFrom}
+                            onChange={(e) => setDateFrom(e.target.value)}
+                            className="w-full px-4 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-green-500 outline-none text-slate-900 dark:text-white shadow-sm"
+                        />
+                    </div>
+
+                    {/* Date To */}
+                    <div className="space-y-2">
+                        <label className="text-slate-700 dark:text-slate-400 text-sm font-medium">Date To</label>
+                        <input
+                            type="date"
+                            value={dateTo}
+                            onChange={(e) => setDateTo(e.target.value)}
+                            className="w-full px-4 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-green-500 outline-none text-slate-900 dark:text-white shadow-sm"
+                        />
+                    </div>
+
+                    {/* Granularity */}
+                    <div className="space-y-2">
+                        <label className="text-slate-700 dark:text-slate-400 text-sm font-medium">Granularity</label>
+                        <select
+                            value={granularity}
+                            onChange={(e) => setGranularity(e.target.value)}
+                            className="w-full px-4 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-green-500 outline-none text-slate-900 dark:text-white shadow-sm"
+                        >
+                            <option value="day">Daily</option>
+                            <option value="month">Monthly</option>
+                            <option value="year">Yearly</option>
+                        </select>
+                    </div>
+
                     {/* Action Button Machine */}
                     {status === 'idle' || status === 'error' || status === 'done' || status === 'timeout' ? (
                         <button
@@ -247,6 +314,22 @@ const ESGReportPage = () => {
                             <Loader2 className="w-5 h-5 animate-spin" /> Submitting Request...
                         </button>
                     )}
+                </div>
+
+                <div className="mt-6 flex flex-wrap gap-3">
+                    <button
+                        onClick={downloadInstantReport}
+                        disabled={isInstantDownloading}
+                        className={cn(
+                            "py-2.5 px-5 rounded-xl font-bold flex items-center justify-center gap-2 transition-all shadow",
+                            isInstantDownloading
+                                ? "bg-slate-300 dark:bg-slate-700 text-slate-500 cursor-not-allowed"
+                                : "bg-emerald-600 text-white hover:bg-emerald-700"
+                        )}
+                    >
+                        {isInstantDownloading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
+                        Download Instant ESG PDF
+                    </button>
                 </div>
 
                 {/* Status Rendering Components */}
