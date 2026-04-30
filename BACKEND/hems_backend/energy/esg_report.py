@@ -248,8 +248,11 @@ def _build_aggregate_features(building: Building) -> Tuple[Dict[str, float], Dic
     """
     # Aggregate building-level metrics
     room_count = Room.objects.filter(building=building).count()
-    area_sqft = _safe_float(building.metadata.get("area_sqft"), 0.0) if isinstance(building.metadata, dict) else 0.0
-    occupancy = _safe_float(building.metadata.get("occupancy"), 0.0) if isinstance(building.metadata, dict) else 10.0
+    
+    # Try to get metadata if it exists, otherwise use defaults
+    metadata = getattr(building, "metadata", {}) or {}
+    area_sqft = _safe_float(metadata.get("area_sqft"), 0.0) if isinstance(metadata, dict) else 0.0
+    occupancy = _safe_float(metadata.get("occupancy"), 0.0) if isinstance(metadata, dict) else 10.0
     
     if area_sqft <= 0:
         area_sqft = room_count * 500.0  # Default: 500 sqft per room
@@ -422,6 +425,9 @@ def generate_esg_report(user) -> BytesIO:
                 {"power": power_models, "light": light_models}
             )
         except Exception as e:
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.warning(f"Failed to predict aggregates for building {building.name}: {str(e)}")
             continue
 
         total_kw = pred["total_kw"]
@@ -591,98 +597,117 @@ def generate_esg_report(user) -> BytesIO:
 
     # Page 4: Load Composition Pie Chart
     story.append(Paragraph("Organization Load Composition", section_style))
-    fig_pie, ax_pie = plt.subplots(figsize=(6, 4))
-    sizes = [total_org_light_appliance_kw, total_org_heavy_kw]
-    labels = [f"Lighting + Appliances\n{org_light_ratio*100:.1f}%", f"Heavy Load (HVAC, Motors)\n{org_heavy_ratio*100:.1f}%"]
-    colors_pie = ["#29d4a0", "#4e9af1"]
-    ax_pie.pie(sizes, labels=labels, colors=colors_pie, autopct="%1.1f kW", startangle=90)
-    ax_pie.set_title("Load Segmentation Analysis")
-    story.append(_chart_to_image(fig_pie, width=400, height=280))
+    
+    # Only render pie chart if we have valid aggregate data
+    if total_org_kw > 0 and (total_org_light_appliance_kw > 0 or total_org_heavy_kw > 0):
+        fig_pie, ax_pie = plt.subplots(figsize=(6, 4))
+        sizes = [total_org_light_appliance_kw, total_org_heavy_kw]
+        labels = [f"Lighting + Appliances\n{org_light_ratio*100:.1f}%", f"Heavy Load (HVAC, Motors)\n{org_heavy_ratio*100:.1f}%"]
+        colors_pie = ["#29d4a0", "#4e9af1"]
+        ax_pie.pie(sizes, labels=labels, colors=colors_pie, autopct="%1.1f kW", startangle=90)
+        ax_pie.set_title("Load Segmentation Analysis")
+        story.append(_chart_to_image(fig_pie, width=400, height=280))
+    else:
+        story.append(Paragraph(
+            f"<i>Insufficient data for load composition analysis. No valid building predictions available. "
+            f"Ensure ML models are loaded and buildings exist in the database.</i>",
+            normal
+        ))
     story.append(PageBreak())
 
     # Page 5: Building Total Power Chart
     story.append(Paragraph("Predicted Total Power by Building", section_style))
-    fig1, ax1 = plt.subplots(figsize=(7.2, 3.2))
-    names = [b["name"] for b in building_rows] or ["N/A"]
-    kw_vals = [b["total_kw"] for b in building_rows] or [0.0]
-    colors_by_eff = []
-    for b in building_rows:
-        if b["efficiency_score"] >= 80:
-            colors_by_eff.append("#29d4a0")
-        elif b["efficiency_score"] >= 50:
-            colors_by_eff.append("#f1a94e")
-        else:
-            colors_by_eff.append("#e05c5c")
-    if not colors_by_eff:
-        colors_by_eff = ["#29d4a0"]
-    ax1.barh(names, kw_vals, color=colors_by_eff)
-    ax1.set_title("Building Total Predicted Power (kW)")
-    ax1.set_xlabel("Total predicted kW")
-    story.append(_chart_to_image(fig1, width=460, height=220))
+    if building_rows:
+        fig1, ax1 = plt.subplots(figsize=(7.2, 3.2))
+        names = [b["name"] for b in building_rows]
+        kw_vals = [b["total_kw"] for b in building_rows]
+        colors_by_eff = []
+        for b in building_rows:
+            if b["efficiency_score"] >= 80:
+                colors_by_eff.append("#29d4a0")
+            elif b["efficiency_score"] >= 50:
+                colors_by_eff.append("#f1a94e")
+            else:
+                colors_by_eff.append("#e05c5c")
+        ax1.barh(names, kw_vals, color=colors_by_eff)
+        ax1.set_title("Building Total Predicted Power (kW)")
+        ax1.set_xlabel("Total predicted kW")
+        story.append(_chart_to_image(fig1, width=460, height=220))
+    else:
+        story.append(Paragraph(
+            f"<i>No buildings with valid predictions to display. Ensure models are loaded and predictions succeed.</i>",
+            normal
+        ))
     story.append(PageBreak())
 
     # Page 6: Load Composition by Building (Stacked)
     story.append(Paragraph("Load Composition by Building (Light vs Heavy)", section_style))
-    fig2, ax2 = plt.subplots(figsize=(7.2, 3.5))
-    x = np.arange(len(building_rows))
-    w = 0.6
-    light_vals = [b["light_appliance_kw"] for b in building_rows]
-    heavy_vals = [b["heavy_load_kw"] for b in building_rows]
-    if len(building_rows) == 0:
-        x = np.arange(1)
-        light_vals = [0.0]
-        heavy_vals = [0.0]
-        labels = ["N/A"]
-    else:
+    if building_rows:
+        fig2, ax2 = plt.subplots(figsize=(7.2, 3.5))
+        x = np.arange(len(building_rows))
+        w = 0.6
+        light_vals = [b["light_appliance_kw"] for b in building_rows]
+        heavy_vals = [b["heavy_load_kw"] for b in building_rows]
         labels = [b["name"] for b in building_rows]
-    ax2.bar(x, light_vals, width=w, color="#29d4a0", label="Lighting + Appliances")
-    ax2.bar(x, heavy_vals, width=w, bottom=light_vals, color="#4e9af1", label="Heavy Load (HVAC, Motors)")
-    ax2.set_xticks(x)
-    ax2.set_xticklabels(labels, rotation=20, ha="right")
-    ax2.set_ylabel("Power (kW)")
-    ax2.set_title("Load Composition by Building")
-    ax2.legend(fontsize=9)
-    story.append(_chart_to_image(fig2, width=460, height=230))
+        ax2.bar(x, light_vals, width=w, color="#29d4a0", label="Lighting + Appliances")
+        ax2.bar(x, heavy_vals, width=w, bottom=light_vals, color="#4e9af1", label="Heavy Load (HVAC, Motors)")
+        ax2.set_xticks(x)
+        ax2.set_xticklabels(labels, rotation=20, ha="right")
+        ax2.set_ylabel("Power (kW)")
+        ax2.set_title("Load Composition by Building")
+        ax2.legend(fontsize=9)
+        story.append(_chart_to_image(fig2, width=460, height=230))
+    else:
+        story.append(Paragraph(
+            f"<i>No buildings with valid predictions to display load composition.</i>",
+            normal
+        ))
     story.append(PageBreak())
 
     # Page 7: Monthly CO2 Projection by Load Type
     story.append(Paragraph("Monthly CO2 Projection by Load Type", section_style))
-    fig3, ax3 = plt.subplots(figsize=(7.2, 3.5))
-    x = np.arange(len(building_rows))
-    w = 0.6
-    light_co2 = [b["monthly_co2_light"] for b in building_rows]
-    heavy_co2 = [b["monthly_co2_heavy"] for b in building_rows]
-    if len(building_rows) == 0:
-        x = np.arange(1)
-        light_co2 = [0.0]
-        heavy_co2 = [0.0]
-        labels = ["N/A"]
-    else:
+    if building_rows:
+        fig3, ax3 = plt.subplots(figsize=(7.2, 3.5))
+        x = np.arange(len(building_rows))
+        w = 0.6
+        light_co2 = [b["monthly_co2_light"] for b in building_rows]
+        heavy_co2 = [b["monthly_co2_heavy"] for b in building_rows]
         labels = [b["name"] for b in building_rows]
-    ax3.bar(x, light_co2, width=w, color="#29d4a0", label="Lighting + Appliances CO2")
-    ax3.bar(x, heavy_co2, width=w, bottom=light_co2, color="#4e9af1", label="Heavy Load CO2")
-    ax3.set_xticks(x)
-    ax3.set_xticklabels(labels, rotation=20, ha="right")
-    ax3.set_ylabel("CO2 Emissions (kg/month)")
-    ax3.set_title("Monthly CO2 Projection by Building")
-    ax3.legend(fontsize=9)
-    story.append(_chart_to_image(fig3, width=460, height=230))
+        ax3.bar(x, light_co2, width=w, color="#29d4a0", label="Lighting + Appliances CO2")
+        ax3.bar(x, heavy_co2, width=w, bottom=light_co2, color="#4e9af1", label="Heavy Load CO2")
+        ax3.set_xticks(x)
+        ax3.set_xticklabels(labels, rotation=20, ha="right")
+        ax3.set_ylabel("CO2 Emissions (kg/month)")
+        ax3.set_title("Monthly CO2 Projection by Building")
+        ax3.legend(fontsize=9)
+        story.append(_chart_to_image(fig3, width=460, height=230))
+    else:
+        story.append(Paragraph(
+            f"<i>No buildings with valid CO2 projections to display.</i>",
+            normal
+        ))
     story.append(PageBreak())
 
     # Page 8: Efficiency Gauge
     story.append(Paragraph("Building-Level Efficiency Scores", section_style))
-    fig_eff, ax_eff = plt.subplots(figsize=(7.2, 3.2))
-    eff_names = [b["name"] for b in building_rows] or ["N/A"]
-    eff_scores = [b["efficiency_score"] for b in building_rows] or [0.0]
-    eff_colors = ["#29d4a0" if s >= 80 else "#f1a94e" if s >= 50 else "#e05c5c" for s in eff_scores]
-    ax_eff.barh(eff_names, eff_scores, color=eff_colors)
-    ax_eff.axvline(x=80, color="green", linestyle="--", linewidth=1, label="Excellent (80+)")
-    ax_eff.axvline(x=50, color="orange", linestyle="--", linewidth=1, label="Fair (50-80)")
-    ax_eff.set_xlim(0, 100)
-    ax_eff.set_title("Building-Level Efficiency Scores (0-100)")
-    ax_eff.set_xlabel("Efficiency Score")
-    ax_eff.legend(fontsize=8)
-    story.append(_chart_to_image(fig_eff, width=460, height=220))
+    if building_rows:
+        fig_eff, ax_eff = plt.subplots(figsize=(7.2, 3.2))
+        eff_names = [b["name"] for b in building_rows]
+        eff_scores = [b["efficiency_score"] for b in building_rows]
+        eff_colors = ["#29d4a0" if s >= 80 else "#f1a94e" if s >= 50 else "#e05c5c" for s in eff_scores]
+        ax_eff.barh(eff_names, eff_scores, color=eff_colors)
+        ax_eff.axvline(x=80, color="green", linestyle="--", linewidth=1, label="Excellent (80+)")
+        ax_eff.axvline(x=50, color="orange", linestyle="--", linewidth=1, label="Fair (50-80)")
+        ax_eff.set_xlim(0, 100)
+        ax_eff.set_title("Building-Level Efficiency Scores (0-100)")
+        ax_eff.set_xlabel("Efficiency Score")
+        ax_eff.legend(fontsize=8)
+        story.append(_chart_to_image(fig_eff, width=460, height=220))
+    else:
+        story.append(Paragraph(
+            f"<i>No building efficiency scores available. Run predictions to populate.</i>",
+            normal
+        ))
     story.append(PageBreak())
 
     # Page 9: Anomalies & Insights
