@@ -93,6 +93,7 @@ const TopDragger = ({ isOpen, onClose }) => {
 
                                     {/* Form */}
                                     <div className="space-y-4">
+                                        <div className="space-y-2">
                                             <div className="flex justify-between items-center">
                                                 <label className="text-xs text-gray-500 dark:text-white/60 font-medium uppercase tracking-wider">Your Message</label>
                                                 {error && <span className="text-xs text-red-500 font-medium">{error}</span>}
