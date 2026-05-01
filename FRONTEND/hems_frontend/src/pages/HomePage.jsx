@@ -16,7 +16,7 @@ const HomePage = () => {
     return (
         <div className="relative text-gray-900 dark:text-white font-sans selection:bg-green-500/30 w-full h-full flex flex-col justify-center">
 
-            <div className="grid lg:grid-cols-2 gap-12 items-center min-h-[60vh]">
+            <div className="grid lg:grid-cols-2 gap-4 items-center min-h-[60vh]">
 
                 {/* Text Content */}
                 <motion.div
@@ -46,7 +46,7 @@ const HomePage = () => {
 
                 {/* 3D Visuals Area — clean layered structure with proper overflow and sizing */}
                 <div
-                    className="relative w-full max-w-[700px] mx-auto overflow-visible"
+                    className="relative w-full max-w-[700px] mx-auto lg:-ml-16 overflow-visible"
                     style={{ height: 750 }}
                 >
                     {/* Globe Layer — centered absolute positioning */}
