@@ -1,20 +1,33 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Mail, Phone, MapPin, Send } from 'lucide-react';
+import { X, Mail, Phone, MapPin, Send, Loader2 } from 'lucide-react';
 import GlassContainer from './GlassContainer';
+import api from '../api/hemsApi';
 
 const TopDragger = ({ isOpen, onClose }) => {
     const [message, setMessage] = React.useState("");
     const [isSent, setIsSent] = React.useState(false);
+    const [isLoading, setIsLoading] = React.useState(false);
+    const [error, setError] = React.useState('');
 
-    const handleSend = () => {
+    const handleSend = async () => {
         if (!message.trim()) return;
-        setIsSent(true);
-        setTimeout(() => {
-            setMessage("");
-            setIsSent(false);
-            onClose();
-        }, 1500);
+        setIsLoading(true);
+        setError('');
+        
+        try {
+            await api.post('/api/energy/contact/', { message: message.trim() });
+            setIsSent(true);
+            setTimeout(() => {
+                setMessage("");
+                setIsSent(false);
+                onClose();
+            }, 1500);
+        } catch (err) {
+            setError('Failed to send message. Please try again.');
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     return (
@@ -80,23 +93,25 @@ const TopDragger = ({ isOpen, onClose }) => {
 
                                     {/* Form */}
                                     <div className="space-y-4">
-                                        <div className="space-y-2">
-                                            <label className="text-xs text-gray-500 dark:text-white/60 font-medium uppercase tracking-wider">Your Message</label>
+                                            <div className="flex justify-between items-center">
+                                                <label className="text-xs text-gray-500 dark:text-white/60 font-medium uppercase tracking-wider">Your Message</label>
+                                                {error && <span className="text-xs text-red-500 font-medium">{error}</span>}
+                                            </div>
                                             <textarea
                                                 value={message}
                                                 onChange={(e) => setMessage(e.target.value)}
                                                 className="w-full h-32 bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-xl p-3 text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-white/20 focus:outline-none focus:border-green-500/50 focus:ring-1 focus:ring-green-500/50 transition-all resize-none text-sm"
                                                 placeholder="How can we assist you today?"
-                                                disabled={isSent}
+                                                disabled={isSent || isLoading}
                                             />
                                         </div>
                                         <button
                                             onClick={handleSend}
-                                            disabled={!message.trim() || isSent}
+                                            disabled={!message.trim() || isSent || isLoading}
                                             className={`w-full py-3 rounded-xl font-semibold transition-all flex items-center justify-center gap-2 shadow-lg ${isSent ? 'bg-emerald-500 text-white shadow-emerald-500/20' : 'bg-green-600 hover:bg-green-500 text-white shadow-green-500/20 disabled:opacity-50 disabled:cursor-not-allowed group'}`}
                                         >
-                                            {isSent ? 'Message Sent!' : 'Send Message'}
-                                            {!isSent && <Send className="w-4 h-4 group-hover:translate-x-1 transition-transform" />}
+                                            {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : isSent ? 'Message Sent!' : 'Send Message'}
+                                            {!isSent && !isLoading && <Send className="w-4 h-4 group-hover:translate-x-1 transition-transform" />}
                                         </button>
                                     </div>
                                 </div>

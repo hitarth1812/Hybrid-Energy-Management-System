@@ -221,3 +221,6 @@ CELERY_ENABLE_UTC = True
 
 # During unit tests, set CELERY_TASK_ALWAYS_EAGER=True to run tasks inline.
 CELERY_TASK_ALWAYS_EAGER = True
+
+# Output emails to the console for development
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'

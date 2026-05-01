@@ -40,6 +40,9 @@ urlpatterns = [
 
     # [H4] Deployment health probe — no auth required, safe for load-balancers
     path('health/', views.health_check, name='health-check'),
+    
+    # Contact Route
+    path('contact/', views.submit_contact_form, name='contact'),
 
     path('', include(router.urls)),
 ]
