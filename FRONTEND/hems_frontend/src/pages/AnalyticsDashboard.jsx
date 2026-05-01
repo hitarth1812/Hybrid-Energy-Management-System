@@ -39,22 +39,6 @@ const AnalyticsDashboard = () => {
         }
     };
 
-    const downloadESGReport = async () => {
-        setIsDownloadingReport(true);
-        try {
-            const res = await api.get('/api/energy/esg-report/', { responseType: 'blob' });
-            const url = URL.createObjectURL(new Blob([res.data], { type: 'application/pdf' }));
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `esg_report_${new Date().toISOString().slice(0, 10)}.pdf`;
-            a.click();
-            URL.revokeObjectURL(url);
-        } catch (err) {
-            console.error('Failed to download ESG report:', err);
-        } finally {
-            setIsDownloadingReport(false);
-        }
-    };
 
     if (isAnalyticsLoading && !analyticsData) {
         return (
@@ -97,13 +81,6 @@ const AnalyticsDashboard = () => {
                         className="inline-flex items-center justify-center px-4 py-2 rounded-lg bg-indigo-500/20 border border-indigo-500/40 text-indigo-400 font-semibold hover:bg-indigo-500/30 disabled:opacity-60 transition-colors"
                     >
                         Download Power Prediction PDF
-                    </button>
-                    <button
-                        onClick={downloadESGReport}
-                        disabled={isDownloadingReport}
-                        className="inline-flex items-center justify-center px-4 py-2 rounded-lg bg-brand text-zinc-900 font-semibold hover:bg-brand/90 disabled:opacity-60 transition-colors"
-                    >
-                        {isDownloadingReport ? 'Generating...' : 'Download ESG Report'}
                     </button>
                 </div>
             </div>

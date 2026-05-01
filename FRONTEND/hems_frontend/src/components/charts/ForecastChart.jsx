@@ -24,6 +24,10 @@ const CustomTooltip = ({ active, payload, label }) => {
 const ForecastChart = ({ data, isLoading }) => {
     if (isLoading) return <div className="h-[300px] w-full animate-pulse bg-surface-elevated rounded-xl"></div>;
 
+    if (!data || data.length === 0) {
+        return <div className="h-[300px] w-full flex items-center justify-center text-zinc-400">No forecast data available</div>;
+    }
+
     // Check if we hold a peak segment
     const hasPeak = data?.some(d => d.is_peak);
 

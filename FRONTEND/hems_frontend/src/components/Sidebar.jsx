@@ -20,7 +20,7 @@ const Sidebar = ({ isDarkMode, toggleTheme, onContactClick }) => {
         { name: 'Time Forecast', icon: Clock, path: '/time-forecast' },
 
         // Carbon Intelligence Platform
-        { name: 'Carbon Dashboard', icon: Globe, path: '/carbon' },
+        { name: 'Carbon Intelligence', icon: Globe, path: '/carbon' },
         { name: 'Carbon Targets', icon: Target, path: '/carbon/targets' },
     ];
 

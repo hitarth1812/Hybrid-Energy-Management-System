@@ -73,7 +73,7 @@ export const predictLight = async (params) => {
 export const getForecast = async (hours = 72) => {
     try {
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 3000);
+        const timeoutId = setTimeout(() => controller.abort(), 10000); // Increased to 10 seconds
         const token = localStorage.getItem('access_token');
         const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
         const res = await fetch(`${BASE_URL}/forecast?hours=${hours}`, { 
@@ -81,9 +81,15 @@ export const getForecast = async (hours = 72) => {
             headers 
         });
         clearTimeout(timeoutId);
-        if (!res.ok) throw new Error("Backend not OK");
-        return await res.json();
-    } catch {
+        if (!res.ok) throw new Error(`Backend error: ${res.status}`);
+        const data = await res.json();
+        // Ensure data is an array
+        if (!Array.isArray(data)) {
+            throw new Error('Invalid forecast data format');
+        }
+        return data;
+    } catch (error) {
+        console.warn('Forecast API error, using fallback:', error.message);
         // Fallback Mock
         await delay(800);
         const data = [];
@@ -107,7 +113,7 @@ export const getForecast = async (hours = 72) => {
 export const getAnalytics = async (granularity = 'daily', selectedDate = null) => {
     try {
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 3000);
+        const timeoutId = setTimeout(() => controller.abort(), 10000); // Increased to 10 seconds
         const dateQuery = selectedDate ? `&date=${selectedDate}` : '';
         const token = localStorage.getItem('access_token');
         const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
@@ -116,11 +122,15 @@ export const getAnalytics = async (granularity = 'daily', selectedDate = null) =
             headers 
         });
         clearTimeout(timeoutId);
-        if (!res.ok) throw new Error("Backend not OK");
-        return await res.json();
-    } catch {
-        // Fallback Mock
-        await delay(1000);
+        if (!res.ok) throw new Error(`Backend error: ${res.status}`);
+        const data = await res.json();
+        // Ensure essential properties exist
+        if (!data.consumption_series) {
+            throw new Error('Invalid analytics data format');
+        }
+        return data;
+    } catch (error) {
+        console.warn('Analytics API error, using fallback:', error.message);
         
         const heatmap_matrix = Array(7).fill(0).map(() => 
             Array(24).fill(0).map((_, hour) => {

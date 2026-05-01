@@ -69,6 +69,14 @@ export default defineConfig({
                 target: 'http://localhost:8000',
                 changeOrigin: true,
             },
+            '/forecast': {
+                target: 'http://localhost:8000',
+                changeOrigin: true,
+            },
+            '/analytics': {
+                target: 'http://localhost:8000',
+                changeOrigin: true,
+            },
         },
     },
 })

@@ -84,7 +84,7 @@ RF_W = float(os.getenv("ENSEMBLE_RF_WEIGHT", 0.30))
 
 
 def predict(feature_dict: dict) -> dict:
-    if _xgb is None and _lgb is None:
+    if _xgb is None and _lgb is None and _rf is None:
         return {"error": "ML models unavailable", "fallback": True}
 
     try:
@@ -160,7 +160,7 @@ def predict(feature_dict: dict) -> dict:
     return result
 
 def predict_light(feature_dict: dict) -> dict:
-    if _xgb_light is None and _lgb_light is None:
+    if _xgb_light is None and _lgb_light is None and _rf_light is None:
         return {"error": "Light ML models unavailable", "fallback": True}
 
     try:
