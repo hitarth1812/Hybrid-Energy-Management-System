@@ -2,7 +2,7 @@
 
 This document provides a comprehensive breakdown of the **Home Energy Management System (HEMS)**, branded as **Arka Energy Nexus**.
 
-> **Last Updated**: April 2, 2026 — v3 session: Appliance Prediction page, dual ML model deployment (power + light), API auth hardening, analytics date picker, sidebar cleanup, and full code audit patch round.
+> **Last Updated**: May 1, 2026 — v4 session: Workspace cleanup & reorganization. Removed duplicate directories, test files, debug logs, and consolidated documentation. System fully operational with Django 5.2.13 (Python 3.10 compatible) and Vite 6.4.2 frontend on ports 8000 and 5174 respectively.
 
 ---
 
@@ -132,7 +132,76 @@ Located in `hems_frontend/src/`.
 
 ---
 
-## 4. API Endpoint Reference
+## 4. Workspace Structure (Post-Cleanup)
+
+The workspace has been reorganized for clarity and maintainability:
+
+```
+HEMS/
+├── .venv/                          # Virtual environment (root)
+├── BACKEND/
+│   ├── hems_backend/               # Main Django backend
+│   │   ├── energy/                 # Core app with models, views, services
+│   │   ├── hems_backend/           # Django config
+│   │   ├── ml_models/              # Dual ML model ensembles (power + light)
+│   │   ├── media/                  # Generated report
+
+---
+
+## 6. Deployment & Environment
+
+### Port Configuration
+- **Frontend**: `http://localhost:5174` (Vite dev server with API proxy)
+- **Backend**: `http://127.0.0.1:8000` (Django development server)
+
+### Python Environment
+- **Python Version**: 3.10 (via `.venv/`)
+- **Key Dependencies**: 
+  - Django 5.2.13 (downgraded from 6.0.3 for Python 3.10 compatibility)
+  - contourpy 1.3.2 (downgraded from 1.3.3 for Python 3.10 compatibility)
+  - All other packages in `requirements.txt` verified compatible
+- **Compatibility Notes**: Django 6.0.3 requires Python 3.12+; all installed versions support Python 3.10
+
+### ML Models Status
+- **Power Models**: XGBoost ✅ | LightGBM ✅ | Random Forest ✅
+- **Light/Appliance Models**: XGBoost ✅ | LightGBM ✅ | Random Forest ✅
+- **Ensemble Strategy**: 30% XGB + 40% LGB + 30% RF (weighted average)
+- **Fallback**: Random Forest provides robust fallback if other models unavailables
+│   │   ├── manage.py
+│   │   ├── requirements.txt        # Python dependencies
+│   │   ├── db.sqlite3              # Development database
+│   │   └── README.md               # Backend setup
+│   ├── scripts/
+│   │   └── export_models.py        # ML model export utility
+│   ├── PROJECT_BLUEPRINT.md        # This file
+│   ├── LICENSE
+│   └── .gitignore
+├── FRONTEND/
+│   └── hems_frontend/              # React + Vite frontend
+│       ├── src/                    # React components & pages
+│       ├── public/                 # Static assets
+│       ├── package.json
+│       ├── vite.config.js          # Dev server config (proxy to :8000)
+│       ├── tailwind.config.js
+│       ├── README.md               # Frontend setup
+│       └── dist/                   # Production build output
+├── README.md                       # Main project documentation
+├── Procfile                        # Deployment config
+├── render.yaml                     # Render.com deployment
+└── .git/
+
+**Removed (v4 cleanup):**
+- Duplicate `hems_backend/` and `hems_frontend/` directories from root
+- `arka_backend/` (old unused workspace)
+- `BACKEND/.venv/` (redundant - using root venv)
+- Test scripts: `test_parser.py`, `test2.py`, `train_v3.py`
+- Debug files: `debug_upload.xlsx`, `EE_EC_AIML(NEW).xlsx`, logs
+- Outdated docs: `ESG_REPORT_REFACTORING.md`, `ANALYTICS_GUIDE.md`, `OPTIMIZATION_*.txt`
+```
+
+---
+
+## 5. API Endpoint Reference
 
 | Endpoint | Method | Auth | Purpose |
 |:---|:---|:---|:---|
