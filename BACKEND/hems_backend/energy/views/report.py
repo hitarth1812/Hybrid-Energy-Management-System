@@ -46,7 +46,7 @@ def delete_report_file(file_path):
 
 # --- FIX 3: CSRF PROTECTION & INPUT VALIDATION ---
 class ESGReportRequestSerializer(serializers.Serializer):
-    building_id = serializers.IntegerField(min_value=1)
+    building_id = serializers.IntegerField(min_value=1, required=False)
     month = serializers.IntegerField(min_value=1, max_value=12)
     year = serializers.IntegerField(min_value=2000, max_value=2100)
 
@@ -67,7 +67,10 @@ def esg_report(request):
     if request.method == 'GET':
         building_id = request.GET.get('building_id')
         if not building_id:
-            return Response({"error": "building_id required"}, status=400)
+            first_building = Building.objects.first()
+            if not first_building:
+                return Response([])
+            building_id = first_building.id
         
         check_building_ownership(request.user, building_id)
         
@@ -111,7 +114,13 @@ def esg_report(request):
         if not serializer.is_valid():
             return Response(serializer.errors, status=400)
             
-        building_id = serializer.validated_data['building_id']
+        building_id = serializer.validated_data.get('building_id')
+        if not building_id:
+            first_building = Building.objects.first()
+            if not first_building:
+                return Response({"error": "No building configured in the system."}, status=400)
+            building_id = first_building.id
+
         month = serializer.validated_data['month']
         year = serializer.validated_data['year']
 
@@ -135,7 +144,10 @@ def esg_report(request):
             from energy.models import PredictionResult
             if not created:
                 if getattr(report, 'celery_task_id', None) and celery_app:
-                    celery_app.control.revoke(report.celery_task_id, terminate=True)
+                    try:
+                        celery_app.control.revoke(report.celery_task_id, terminate=True)
+                    except Exception as e:
+                        logger.warning(f"Could not revoke celery task: {e}")
                 if report.pdf_file:
                     delete_report_file(report.pdf_file.name)
                 PredictionResult.objects.filter(report=report).delete()

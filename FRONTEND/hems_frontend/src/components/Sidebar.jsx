@@ -3,7 +3,7 @@ import { NavLink } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
     LayoutDashboard, Server, UploadCloud, Zap, Settings, HelpCircle, Moon, Sun, ChevronRight, AlertCircle,
-    Globe, Clock, Target, FileText, Cpu
+    Globe, Clock, Target, FileText, Cpu, X
 } from 'lucide-react';
 import { cn } from '../lib/utils';
 import ArkaLogo from '../assets/arka_logo.png';
@@ -33,8 +33,8 @@ const Sidebar = ({ isDarkMode, toggleTheme, onContactClick }) => {
         )}>
 
             {/* Branding */}
-            <div className="space-y-6 mt-4 px-2">
-                <div className="flex flex-col items-center gap-2 group">
+            <div className="space-y-6 mt-4 px-2 relative">
+                <div className="flex flex-col items-center gap-2 group mt-4">
                     {/* ARKA Logo Container - Animated & Glassmorphic */}
                     <motion.div
                         className="relative w-32 h-32 shrink-0 flex items-center justify-center p-4 rounded-3xl bg-white/40 dark:bg-white/5 border border-white/20 dark:border-white/5 shadow-inner backdrop-blur-md overflow-hidden"

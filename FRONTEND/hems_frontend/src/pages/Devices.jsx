@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 // import BulkDeviceUpload from '@/components/BulkDeviceUpload'
-import { deviceService, brandService, buildingService, roomService, categoryService } from '../services/api'
+import api, { deviceService, brandService, buildingService, roomService, categoryService } from '../services/api'
 
 const deviceIcons = {
     FAN: Fan, AC: AirVent, LIGHT: Lightbulb, PC: Monitor, ELECTRONICS: Monitor, OTHER: Cpu,
@@ -44,6 +44,7 @@ export default function Devices() {
     const [loading, setLoading] = useState(true)
     const [viewMode, setViewMode] = useState('table')
     const [showForm, setShowForm] = useState(false)
+    const [deleteDialog, setDeleteDialog] = useState({ open: false, device: null, count: 1 })
 
     const [filters, setFilters] = useState({ search: '', building: 'all', room: 'all', brand: 'all', device_type: 'all' })
     const [formData, setFormData] = useState({
@@ -109,11 +110,37 @@ export default function Devices() {
     const handleSubmit = async (e) => {
         e.preventDefault()
         try {
-            await deviceService.create(formData)
+            const payload = { ...formData }
+            // Remove empty strings for numeric and foreign key fields to prevent 400 Bad Request
+            if (!payload.star_rating) delete payload.star_rating
+            if (!payload.ton) delete payload.ton
+            if (!payload.category) delete payload.category
+            if (!payload.brand) delete payload.brand
+
+            await deviceService.create(payload)
             setShowForm(false)
             fetchDevices(true)
             setFormData({ name: '', device_type: 'FAN', category: '', brand: '', building: '', room: '', quantity: 1, watt_rating: 0, star_rating: '', ton: '' })
-        } catch (e) { alert('Error creating device') }
+        } catch (e) { 
+            alert('Error creating device: ' + JSON.stringify(e.response?.data || e.message))
+            console.error(e.response?.data || e)
+        }
+    }
+
+    const handleDeleteConfirm = async () => {
+        try {
+            const { device, count } = deleteDialog
+            if (count >= device.quantity) {
+                await deviceService.delete(device.id)
+            } else {
+                await api.patch(`/api/devices/${device.id}/`, { quantity: device.quantity - count })
+            }
+            setDeleteDialog({ open: false, device: null, count: 1 })
+            fetchDevices(true)
+        } catch (e) {
+            alert('Failed to delete device')
+            console.error(e)
+        }
     }
 
     const filteredRooms = metadata.rooms.filter(r => r.building.toString() === formData.building)
@@ -220,6 +247,32 @@ export default function Devices() {
                         </form>
                     </DialogContent>
                 </Dialog>
+
+                {/* Delete Confirmation Dialog */}
+                <Dialog open={deleteDialog.open} onOpenChange={(open) => setDeleteDialog(prev => ({ ...prev, open }))}>
+                    <DialogContent>
+                        <DialogHeader><DialogTitle className="text-gray-900 dark:text-white">Delete Device(s)</DialogTitle></DialogHeader>
+                        <div className='py-4 space-y-4'>
+                            <p className="text-gray-700 dark:text-gray-300">How many <strong>{deleteDialog.device?.name || deleteDialog.device?.device_type}</strong> devices do you want to remove?</p>
+                            <div className='flex items-center gap-4'>
+                                <Label className="text-gray-900 dark:text-gray-200">Quantity to remove:</Label>
+                                <Input 
+                                    type='number' 
+                                    min='1' 
+                                    max={deleteDialog.device?.quantity || 1} 
+                                    value={deleteDialog.count} 
+                                    onChange={(e) => setDeleteDialog(prev => ({ ...prev, count: parseInt(e.target.value) || 1 }))}
+                                    className='w-24 bg-white dark:bg-black/40 dark:text-white'
+                                />
+                                <span className="text-sm text-gray-500 dark:text-gray-400">of {deleteDialog.device?.quantity}</span>
+                            </div>
+                            <div className="flex justify-end gap-2 mt-6">
+                                <Button variant='outline' onClick={() => setDeleteDialog(prev => ({ ...prev, open: false }))}>Cancel</Button>
+                                <Button variant='destructive' onClick={handleDeleteConfirm}>Delete</Button>
+                            </div>
+                        </div>
+                    </DialogContent>
+                </Dialog>
             </div>
 
             <Card className="dark:bg-black/40 dark:border-white/10">
@@ -247,7 +300,7 @@ export default function Devices() {
 
             {loading ? <div className='text-center py-10 text-gray-500 dark:text-gray-400'>Loading...</div> : (
                 viewMode === 'table' ? (
-                    <div className='border dark:border-white/10 rounded-lg overflow-hidden bg-white dark:bg-black/40'>
+                    <div className='border dark:border-white/10 rounded-lg overflow-hidden bg-white/40 dark:bg-black/40 backdrop-blur-xl'>
                         <Table>
                             <TableHeader>
                                 <TableRow className="dark:border-white/10">
@@ -271,7 +324,7 @@ export default function Devices() {
                                                 {dev.star_rating ? ` • ${dev.star_rating}⭐` : ''}
                                             </TableCell>
                                             <TableCell className='text-right'>
-                                                <Button size='sm' variant='ghost' className='text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20' onClick={() => handleDeleteDevice(dev.id)}><Trash2 className='h-4 w-4' /></Button>
+                                                <Button size='sm' variant='ghost' className='text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20' onClick={() => setDeleteDialog({ open: true, device: dev, count: 1 })}><Trash2 className='h-4 w-4' /></Button>
                                             </TableCell>
                                         </TableRow>
                                     )

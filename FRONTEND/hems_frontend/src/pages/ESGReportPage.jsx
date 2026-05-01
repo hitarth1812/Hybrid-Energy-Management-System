@@ -29,15 +29,13 @@ const ESGReportPage = () => {
     }, []);
 
     useEffect(() => {
-        if (selectedBuilding) fetchReports();
-        else setReports([]);
+        fetchReports();
         setStatus('idle');
-    }, [selectedBuilding]);
+    }, []);
 
     const fetchReports = async () => {
-        if (!selectedBuilding) return;
         try {
-            const res = await api.get(`/api/carbon/esg-report/?building_id=${selectedBuilding}`);
+            const res = await api.get(`/api/carbon/esg-report/`);
             setReports(res.data);
         } catch (err) {
             console.error(err);
@@ -45,14 +43,12 @@ const ESGReportPage = () => {
     };
 
     const handleGenerate = async () => {
-        if (!selectedBuilding) return;
         setStatus('submitting');
         setErrorMessage('');
         setDownloadUrl(null);
 
         try {
             const res = await api.post('/api/carbon/esg-report/', {
-                building_id: selectedBuilding,
                 month: selectedMonth,
                 year: selectedYear,
             });
@@ -82,6 +78,7 @@ const ESGReportPage = () => {
                     granularity,
                 },
                 responseType: 'blob',
+                timeout: 120000, // 2 minutes timeout for heavy instant report
             });
             const url = URL.createObjectURL(new Blob([res.data], { type: 'application/pdf' }));
             const link = document.createElement('a');
@@ -200,30 +197,12 @@ const ESGReportPage = () => {
             </div>
 
             {/* Generator Form */}
-            <div className="bg-white/60 dark:bg-slate-800/50 p-6 rounded-2xl border border-slate-200 dark:border-slate-700/50 backdrop-blur-xl mb-12 shadow-lg">
+            <div className="bg-white/40 backdrop-blur-xl dark:bg-slate-800/50 p-6 rounded-2xl border border-slate-200 dark:border-slate-700/50 backdrop-blur-xl mb-12 shadow-lg">
                 <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-6 flex items-center gap-2">
                     <Download className="w-5 h-5 text-blue-500 dark:text-blue-400" /> Run New Extraction
                 </h3>
 
-                <div className="grid grid-cols-1 md:grid-cols-6 gap-4 items-end transition-all">
-                    {/* Building Select Element */}
-                    <div className="space-y-2">
-                        <label className="text-slate-700 dark:text-slate-400 text-sm font-medium">Target Building</label>
-                        <div className="relative">
-                            <Building className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
-                            <select
-                                disabled={status !== 'idle' && status !== 'error' && status !== 'done' && status !== 'timeout'}
-                                value={selectedBuilding}
-                                onChange={(e) => setSelectedBuilding(e.target.value)}
-                                className="w-full pl-10 pr-4 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-green-500 outline-none text-slate-900 dark:text-white appearance-none shadow-sm disabled:opacity-50"
-                            >
-                                <option value="">Select Structure</option>
-                                {buildings.map(b => (
-                                    <option key={b.id} value={b.id}>{b.name}</option>
-                                ))}
-                            </select>
-                        </div>
-                    </div>
+                <div className="grid grid-cols-1 md:grid-cols-5 gap-4 items-end transition-all">
 
                     {/* Month Select Element */}
                     <div className="space-y-2">
@@ -294,26 +273,7 @@ const ESGReportPage = () => {
                         </select>
                     </div>
 
-                    {/* Action Button Machine */}
-                    {status === 'idle' || status === 'error' || status === 'done' || status === 'timeout' ? (
-                        <button
-                            onClick={status === 'error' || status === 'timeout' ? handleGenerate : handleGenerate}
-                            disabled={!selectedBuilding}
-                            className={cn(
-                                "py-3 px-6 rounded-xl font-bold flex items-center justify-center gap-2 transition-all shadow-lg",
-                                !selectedBuilding
-                                    ? "bg-slate-300 dark:bg-slate-700 text-slate-500 cursor-not-allowed"
-                                    : "bg-gradient-to-r from-blue-500 to-indigo-600 text-white hover:scale-105 active:scale-95"
-                            )}
-                        >
-                            {status === 'error' ? <RotateCcw className="w-5 h-5" /> : <Download className="w-5 h-5" />}
-                            {status === 'error' ? 'Retry Generation' : 'Generate ESG PDF'}
-                        </button>
-                    ) : (
-                        <button disabled className="py-3 px-6 bg-slate-200 dark:bg-slate-700 text-slate-500 cursor-not-allowed rounded-xl font-bold flex items-center justify-center gap-2 shadow-lg w-full h-[52px]">
-                            <Loader2 className="w-5 h-5 animate-spin" /> Submitting Request...
-                        </button>
-                    )}
+
                 </div>
 
                 <div className="mt-6 flex flex-wrap gap-3">
@@ -328,7 +288,7 @@ const ESGReportPage = () => {
                         )}
                     >
                         {isInstantDownloading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
-                        Download Instant ESG PDF
+                        Download ESG Report
                     </button>
                 </div>
 
@@ -413,7 +373,7 @@ const ESGReportPage = () => {
             {selectedBuilding && (
                 <div className="space-y-4">
                     <h3 className="text-xl font-bold text-slate-900 dark:text-white pl-1 tracking-tight">Active Generation History</h3>
-                    <div className="bg-white/60 dark:bg-slate-800/30 rounded-2xl border border-slate-200 dark:border-slate-700/30 overflow-hidden shadow-sm">
+                    <div className="bg-white/40 backdrop-blur-xl dark:bg-slate-800/30 rounded-2xl border border-slate-200 dark:border-slate-700/30 overflow-hidden shadow-sm">
                         {reports.length === 0 ? (
                             <div className="p-8 text-center text-slate-500 italic">This building contains zero legacy reporting footprints.</div>
                         ) : (

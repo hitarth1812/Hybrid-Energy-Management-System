@@ -86,7 +86,7 @@ const CarbonTargetManager = () => {
             {loading ? (
                 <div className="flex justify-center p-12"><div className="w-8 h-8 border-4 border-slate-600 border-t-red-500 rounded-full animate-spin" /></div>
             ) : (
-                <div className="bg-white/60 dark:bg-slate-800/50 rounded-2xl border border-slate-200 dark:border-slate-700/50 backdrop-blur-xl overflow-hidden shadow-xl">
+                <div className="bg-white/40 backdrop-blur-xl dark:bg-slate-800/50 rounded-2xl border border-slate-200 dark:border-slate-700/50 backdrop-blur-xl overflow-hidden shadow-xl">
                     <div className="overflow-x-auto">
                         <table className="w-full text-left border-collapse">
                             <thead>

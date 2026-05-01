@@ -95,7 +95,7 @@ const CarbonCalculator = () => {
     return (
         <div className="space-y-6 max-w-7xl mx-auto">
             {/* Config Panel */}
-            <div className="bg-white/60 dark:bg-slate-800/60 rounded-2xl border border-slate-200 dark:border-slate-700/50 backdrop-blur-xl shadow-lg p-6">
+            <div className="bg-white/40 backdrop-blur-xl dark:bg-slate-800/60 rounded-2xl border border-slate-200 dark:border-slate-700/50 backdrop-blur-xl shadow-lg p-6">
                 <h2 className="text-xl font-bold text-slate-800 dark:text-white flex items-center gap-2 mb-6">
                     <Calculator className="w-5 h-5 text-emerald-500" />
                     Configure Calculation
@@ -261,7 +261,7 @@ const CarbonCalculator = () => {
 
                         {/* Room Comparison Chart */}
                         {result.room_comparison.length > 1 && (
-                            <div className="bg-white/60 dark:bg-slate-800/50 rounded-2xl border border-slate-200 dark:border-slate-700/50 backdrop-blur-xl p-6">
+                            <div className="bg-white/40 backdrop-blur-xl dark:bg-slate-800/50 rounded-2xl border border-slate-200 dark:border-slate-700/50 backdrop-blur-xl p-6">
                                 <h3 className="text-lg font-bold text-slate-800 dark:text-white mb-1">Room-wise Comparison</h3>
                                 <p className="text-sm text-slate-500 mb-4">Carbon emissions per room (kg CO₂)</p>
                                 <ResponsiveContainer width="100%" height={260}>
@@ -285,7 +285,7 @@ const CarbonCalculator = () => {
 
                         {/* Device Breakdown Table */}
                         {result.devices.length > 0 && (
-                            <div className="bg-white/60 dark:bg-slate-800/50 rounded-2xl border border-slate-200 dark:border-slate-700/50 backdrop-blur-xl overflow-hidden">
+                            <div className="bg-white/40 backdrop-blur-xl dark:bg-slate-800/50 rounded-2xl border border-slate-200 dark:border-slate-700/50 backdrop-blur-xl overflow-hidden">
                                 <div className="p-6 border-b border-slate-200 dark:border-slate-700/50">
                                     <h3 className="text-lg font-bold text-slate-800 dark:text-white">Device Breakdown</h3>
                                     <p className="text-sm text-slate-500">{result.devices.length} devices in scope</p>

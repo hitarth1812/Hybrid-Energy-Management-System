@@ -49,7 +49,6 @@ def generate_esg_pdf(self, report_id: int, user_email: str = None) -> None:
         year = report.year
 
         logs = UsageLog.objects.filter(
-            device__building=building,
             date__year=year,
             date__month=month,
         )
@@ -57,9 +56,9 @@ def generate_esg_pdf(self, report_id: int, user_email: str = None) -> None:
         total_kwh = logs.aggregate(s=Sum('energy_kwh'))['s'] or 0
         total_carbon = logs.aggregate(s=Sum('carbon_kg'))['s'] or 0
         target_obj = CarbonTarget.objects.filter(
-            building=building, year=year, month=month
-        ).first()
-        target_kg = target_obj.target_kg if target_obj else None
+            year=year, month=month
+        ).aggregate(t=Sum('target_kg'))
+        target_kg = target_obj['t'] if target_obj and target_obj['t'] else None
         emission_factor = getattr(settings, 'EMISSION_FACTOR', 0.82)
 
         filename = f"ESG_{building.name.replace(' ', '_')}_{year}_{month:02d}.pdf"
@@ -73,9 +72,9 @@ def generate_esg_pdf(self, report_id: int, user_email: str = None) -> None:
         elements = []
 
         # Cover
-        elements.append(Paragraph("ESG Energy Report", styles['Title']))
+        elements.append(Paragraph("Global ESG Energy Report", styles['Title']))
         elements.append(Spacer(1, 24))
-        elements.append(Paragraph(f"Building: {building.name}", styles['Heading2']))
+        elements.append(Paragraph(f"Scope: Organization-Wide (All Campuses)", styles['Heading2']))
         elements.append(Paragraph(f"Period: {date(year, month, 1).strftime('%B %Y')}", styles['Normal']))
         elements.append(Paragraph(f"Generated: {datetime.now().strftime('%Y-%m-%d')}", styles['Normal']))
         elements.append(PageBreak())
@@ -130,7 +129,7 @@ def generate_esg_pdf(self, report_id: int, user_email: str = None) -> None:
 
         # Output Efficiency Report
         elements.append(Paragraph("Output Efficiency Report", styles['Heading1']))
-        outputs = OutputLog.objects.filter(device__building=building, timestamp__year=year, timestamp__month=month)
+        outputs = OutputLog.objects.filter(timestamp__year=year, timestamp__month=month)
         tot_output = outputs.aggregate(s=Sum('output_value'))['s'] or 0
         elements.append(Paragraph(f"Actual Output vs Energy Consumed. Total Output: {round(tot_output, 2)} units", styles['Normal']))
         elements.append(Paragraph(f"Overall Efficiency Ratio: {round(tot_output/total_kwh, 4) if total_kwh>0 else 0} units/kWh", styles['Normal']))
@@ -147,16 +146,16 @@ def generate_esg_pdf(self, report_id: int, user_email: str = None) -> None:
 
         # Room-wise Consumption
         summary_room = (UsageLog.objects
-            .filter(device__building_id=building.id, date__month=month, date__year=year)
-            .values('device__room__name')
+            .filter(date__month=month, date__year=year)
+            .values('device__room__name', 'device__building__name')
             .annotate(total_kwh=Sum('energy_kwh'), total_carbon_kg=Sum('carbon_kg'))
             .order_by('-total_carbon_kg')
         )
         
         elements.append(Paragraph("Room-By-Room Summary", styles['Heading1']))
-        data = [['Room', 'Energy (kWh)', 'Carbon (kg)', 'Compliance']]
+        data = [['Building / Room', 'Energy (kWh)', 'Carbon (kg)', 'Compliance']]
         for r in summary_room:
-            room_name = r.get('device__room__name') or "Unknown"
+            room_name = f"{r.get('device__building__name') or 'Global'} - {r.get('device__room__name') or 'Unknown'}"
             # Mocking compliance status since it requires tracking targets per room
             c_status = "ON_TRACK"
             data.append([room_name, round(r['total_kwh'] or 0, 2), round(r['total_carbon_kg'] or 0, 2), c_status])
@@ -183,7 +182,7 @@ def generate_esg_pdf(self, report_id: int, user_email: str = None) -> None:
                 m_iter += 12
                 y_iter -= 1
             m_logs = UsageLog.objects.filter(
-                device__building=building, date__year=y_iter, date__month=m_iter
+                date__year=y_iter, date__month=m_iter
             ).aggregate(k=Sum('energy_kwh'), c=Sum('carbon_kg'))
             name = date(y_iter, m_iter, 1).strftime('%b %Y')
             trend_data.append([name, round(m_logs['k'] or 0, 2), round(m_logs['c'] or 0, 2)])

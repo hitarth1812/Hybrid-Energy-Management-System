@@ -46,7 +46,7 @@ const EnergyUsage = () => {
                     <PredictionResultCards result={result} />
                     
                     {/* Render Mini chart inside a nice glass card */}
-                    <div className="bg-white/70 dark:bg-surface-card border border-gray-300 dark:border-surface-border rounded-2xl p-5 shadow-lg">
+                    <div className="bg-white/40 backdrop-blur-xl dark:bg-surface-card border border-gray-300 dark:border-surface-border rounded-2xl p-5 shadow-lg">
                         <div className="flex items-center justify-between mb-2">
                             <h3 className="text-sm tracking-wide text-gray-700 dark:text-zinc-400 font-bold uppercase flex items-center gap-2">
                                 <Zap className="w-4 h-4 text-emerald-600 dark:text-brand" /> Prediction History
