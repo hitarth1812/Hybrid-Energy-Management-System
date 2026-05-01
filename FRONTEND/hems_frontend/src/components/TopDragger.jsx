@@ -2,7 +2,7 @@ import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Mail, Phone, MapPin, Send, Loader2 } from 'lucide-react';
 import GlassContainer from './GlassContainer';
-import api from '../api/hemsApi';
+import api from '../utils/axiosInstance';
 
 const TopDragger = ({ isOpen, onClose }) => {
     const [message, setMessage] = React.useState("");
