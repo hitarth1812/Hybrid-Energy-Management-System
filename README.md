@@ -1,3 +1,7 @@
+<div align="center">
+ <img src="FRONTEND/hems_frontend/src/assets/arka_logo.png" alt="ARKA ENERGY NEXUS" width="300"/>
+</div>
+
 # Arka Energy Nexus
 
 AI-powered **Hybrid Energy Management System (HEMS)** for real-time energy monitoring, ML-powered predictions, and operational efficiency optimization.
@@ -9,7 +13,7 @@ AI-powered **Hybrid Energy Management System (HEMS)** for real-time energy monit
 ![ML](https://img.shields.io/badge/ML-XGBoost%20%2B%20LightGBM%20%2B%20RandomForest-FF6B35?style=flat-square)
 ![License](https://img.shields.io/badge/License-MIT-yellow?style=flat-square)
 
-## 🎯 Overview
+## Overview
 
 Arka Energy Nexus is a comprehensive energy management platform that helps organizations track energy consumption, predict future loads, monitor carbon emissions, and optimize operational efficiency.
 
@@ -23,54 +27,54 @@ Arka Energy Nexus is a comprehensive energy management platform that helps organ
 - **Smart Uploading** — 2-step validation (preview → save) with JWT authentication
 - **Secure API** — REST framework with JWT token management and automatic refresh
 
-## 📂 Workspace Structure
+## Workspace Structure
 
 ```
 HEMS/
-├── .venv/                          # Python virtual environment
+├── .venv/ # Python virtual environment
 ├── BACKEND/
-│   ├── hems_backend/               # Main Django application
-│   │   ├── energy/                 # Core energy management app
-│   │   │   ├── models.py           # DB schema (Building, Room, Device, etc.)
-│   │   │   ├── views/              # API endpoints
-│   │   │   ├── services/           # Business logic (ML, parsing, etc.)
-│   │   │   ├── migrations/         # Database schema versions
-│   │   │   └── tests.py
-│   │   ├── hems_backend/           # Django configuration
-│   │   ├── ml_models/              # ML ensembles (power + light)
-│   │   ├── media/                  # Generated reports
-│   │   ├── manage.py
-│   │   ├── requirements.txt
-│   │   ├── db.sqlite3              # Development database
-│   │   ├── render-start.sh         # Production entry script
-│   │   └── README.md
-│   ├── scripts/
-│   │   └── export_models.py        # Model export utility
-│   ├── PROJECT_BLUEPRINT.md        # Detailed architecture (READ THIS)
-│   └── LICENSE
+│ ├── hems_backend/ # Main Django application
+│ │ ├── energy/ # Core energy management app
+│ │ │ ├── models.py # DB schema (Building, Room, Device, etc.)
+│ │ │ ├── views/ # API endpoints
+│ │ │ ├── services/ # Business logic (ML, parsing, etc.)
+│ │ │ ├── migrations/ # Database schema versions
+│ │ │ └── tests.py
+│ │ ├── hems_backend/ # Django configuration
+│ │ ├── ml_models/ # ML ensembles (power + light)
+│ │ ├── media/ # Generated reports
+│ │ ├── manage.py
+│ │ ├── requirements.txt
+│ │ ├── db.sqlite3 # Development database
+│ │ ├── render-start.sh # Production entry script
+│ │ └── README.md
+│ ├── scripts/
+│ │ └── export_models.py # Model export utility
+│ ├── PROJECT_BLUEPRINT.md # Detailed architecture (READ THIS)
+│ └── LICENSE
 ├── FRONTEND/
-│   └── hems_frontend/              # React + Vite application
-│       ├── src/
-│       │   ├── components/         # Reusable UI components
-│       │   ├── pages/              # Route pages
-│       │   ├── api/                # API client (hemsApi.js)
-│       │   ├── hooks/              # Custom React hooks
-│       │   ├── context/            # State management
-│       │   ├── services/           # Frontend services
-│       │   └── utils/              # Helper functions
-│       ├── public/                 # Static assets
-│       ├── package.json
-│       ├── vite.config.js          # Dev server (proxy: :8000)
-│       ├── tailwind.config.js
-│       ├── vercel.json
-│       └── README.md
-├── README.md                       # This file
-├── Procfile                        # Heroku/Railway deployment
-├── render.yaml                     # Render.com deployment
+│ └── hems_frontend/ # React + Vite application
+│ ├── src/
+│ │ ├── components/ # Reusable UI components
+│ │ ├── pages/ # Route pages
+│ │ ├── api/ # API client (hemsApi.js)
+│ │ ├── hooks/ # Custom React hooks
+│ │ ├── context/ # State management
+│ │ ├── services/ # Frontend services
+│ │ └── utils/ # Helper functions
+│ ├── public/ # Static assets
+│ ├── package.json
+│ ├── vite.config.js # Dev server (proxy: :8000)
+│ ├── tailwind.config.js
+│ ├── vercel.json
+│ └── README.md
+├── README.md # This file
+├── Procfile # Heroku/Railway deployment
+├── render.yaml # Render.com deployment
 └── .gitignore
 ```
 
-## 🛠 Tech Stack
+## Tech Stack
 
 | Component | Technology |
 |-----------|------------|
@@ -82,7 +86,7 @@ HEMS/
 | **LLM Integration** | Groq API (`mixtral-8x7b-32768`) via LangChain |
 | **Python Version** | 3.10 (fixed for compatibility) |
 
-## ⚡ Quick Start
+## Quick Start
 
 ### Prerequisites
 - Python 3.10+
@@ -151,7 +155,7 @@ npm run dev
 
 > **Note:** Vite dev server proxies API calls to `http://localhost:8000` (configured in `vite.config.js`)
 
-## 🔐 Environment Configuration
+## Environment Configuration
 
 Create `.env` file in `BACKEND/hems_backend`:
 
@@ -174,22 +178,22 @@ GROQ_API_KEY=your-groq-api-key-here
 EMAIL_BACKEND=django.core.mail.backends.console.EmailBackend
 ```
 
-## 📊 API Endpoints Overview
+## API Endpoints Overview
 
 | Endpoint | Method | Auth | Purpose |
 |----------|--------|------|---------|
-| `/api/energy/predict/` | POST | ✅ | Power consumption prediction |
-| `/api/energy/predict/light/` | POST | ✅ | Appliance/lighting prediction |
-| `/api/energy/predict/time/` | GET | ❌ | 72-hour forecast |
-| `/api/energy/smart-upload/preview/` | POST | ✅ | Parse file preview |
-| `/api/energy/smart-upload/save/` | POST | ✅ | Save to database |
-| `/api/energy/carbon/dashboard/` | GET | ✅ | KPI aggregation |
-| `/api/health/` | GET | ❌ | Health probe |
-| `/api/auth/login/` | POST | ❌ | JWT token exchange |
+| `/api/energy/predict/` | POST | | Power consumption prediction |
+| `/api/energy/predict/light/` | POST | | Appliance/lighting prediction |
+| `/api/energy/predict/time/` | GET | | 72-hour forecast |
+| `/api/energy/smart-upload/preview/` | POST | | Parse file preview |
+| `/api/energy/smart-upload/save/` | POST | | Save to database |
+| `/api/energy/carbon/dashboard/` | GET | | KPI aggregation |
+| `/api/health/` | GET | | Health probe |
+| `/api/auth/login/` | POST | | JWT token exchange |
 
 **Full API documentation:** See [PROJECT_BLUEPRINT.md](BACKEND/PROJECT_BLUEPRINT.md)
 
-## 🚀 Deployment
+## Deployment
 
 ### Render.com
 ```bash
@@ -202,12 +206,12 @@ EMAIL_BACKEND=django.core.mail.backends.console.EmailBackend
 # Uses Procfile for process definition
 ```
 
-## 🐛 Troubleshooting
+## Troubleshooting
 
 ### Backend Won't Start
 ```bash
 # Check Python version
-python --version  # Should be 3.10+
+python --version # Should be 3.10+
 
 # Reinstall dependencies
 pip install --upgrade -r requirements.txt
@@ -237,23 +241,23 @@ npm run dev
 - Check `predictor.py` logs
 - Random Forest fallback should activate if others fail
 
-## 📚 Documentation
+## Documentation
 
 - **[PROJECT_BLUEPRINT.md](BACKEND/PROJECT_BLUEPRINT.md)** — Detailed architecture, data models, API reference
 - **[BACKEND/hems_backend/README.md](BACKEND/hems_backend/README.md)** — Backend-specific setup
 - **[FRONTEND/hems_frontend/README.md](FRONTEND/hems_frontend/README.md)** — Frontend-specific setup
 
-## 📝 License
+## License
 
 This project is licensed under the MIT License. See [LICENSE](BACKEND/LICENSE) for details.
 
-## 👤 Author
+## Author
 
-**Hitarth Khatiwala**  
+**Hitarth Khatiwala** 
 - Email: hitarthkhatiwala@gmail.com
 - Phone: +91 7096235959
 
-## 🔄 Version History
+## Version History
 
 - **v4** (May 1, 2026) — Workspace cleanup, documentation consolidation
 - **v3** (April 2, 2026) — Dual ML models (power + light), appliance prediction
